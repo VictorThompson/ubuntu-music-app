@@ -142,6 +142,7 @@ MainView {
 
                         onClicked: {
                             Jarray.clear()
+                            playMusic.stop()
                             folderModel.folder = Qt.resolvedUrl(foldertext.text)
                         }
                     }
