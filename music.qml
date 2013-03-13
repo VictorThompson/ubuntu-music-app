@@ -87,8 +87,9 @@ MainView {
                     FolderListModel {
                         id: folderModel
                         showDirs: true
-                        showDotAndDotDot: true
-                        showDirsFirst: true
+                        // TODO: both of these cause the "isFolder()" check to detect music files as folders. Find a fix.
+                        //showDotAndDotDot: true
+                        //showDirsFirst: true
                         nameFilters: ["*.mp3"]
                         folder: Qt.resolvedUrl("/")
                     }
