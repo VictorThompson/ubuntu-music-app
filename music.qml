@@ -88,8 +88,10 @@ MainView {
                         id: folderModel
                         showDirs: true
                         // TODO: both of these cause the "isFolder()" check to detect music files as folders. Find a fix.
-                        //showDotAndDotDot: true
-                        //showDirsFirst: true
+                        // TEMP: this has been temporarily fixed by checking for ".mp3" in fileName. Thus, we'll try to "play"
+                        //       a folder that has .mp3 in the name. Bug probably isn't in showDirs or showDotAndDotDot.
+                        showDotAndDotDot: true
+                        showDirsFirst: true
                         nameFilters: ["*.mp3"]
                         folder: Qt.resolvedUrl("/")
                     }
@@ -99,11 +101,11 @@ MainView {
                         ListItem.Standard {
                             id: file
                             text: fileName
-                            progression: folderModel.isFolder(filePath)
+                            progression: !fileName.match("\\.mp3")
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
-                                    if (folderModel.isFolder(filePath)) {
+                                    if (!fileName.match("\\.mp3")) {
                                         Jarray.clear()
                                         playMusic.stop()
                                         folderModel.folder = Qt.resolvedUrl(filePath)
@@ -122,14 +124,13 @@ MainView {
                                         playMusic.play()
                                     }
                                 }
-                                Component.onCompleted: {
-                                    if (!Jarray.contains(filePath) && !folderModel.isFolder(filePath)) {
-                                        console.log("Adding file:" + filePath)
-                                        Jarray.addItem(filePath)
-                                    }
+                            }
+                            Component.onCompleted: {
+                                if (!Jarray.contains(filePath) && fileName.match("\\.mp3")) {
+                                    console.log("Adding file:" + filePath)
+                                    Jarray.addItem(filePath)
                                 }
                             }
-
                         }
                     }
                     model: folderModel
