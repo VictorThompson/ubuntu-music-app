@@ -25,6 +25,7 @@ MainView {
         
         // First tab begins here
         Tab {
+            id: tab
             objectName: "Tab1"
             
             title: i18n.tr("Music")
@@ -85,9 +86,11 @@ MainView {
                     }
                     FolderListModel {
                         id: folderModel
-                        showDirs: false
+                        showDirs: true
+                        showDotAndDotDot: true
+                        showDirsFirst: true
                         nameFilters: ["*.mp3"]
-                        folder: Qt.resolvedUrl("")
+                        folder: Qt.resolvedUrl("/")
                     }
 
                     Component {
@@ -95,23 +98,37 @@ MainView {
                         ListItem.Standard {
                             id: file
                             text: fileName
+                            progression: folderModel.isFolder(filePath)
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
-                                    playMusic.stop()
-                                    playMusic.source = Qt.resolvedUrl(filePath)
-                                    playlist.currentIndex = index
-                                    page.playing = playlist.currentIndex
-                                    console.log("Playing click: "+playMusic.source)
-                                    console.log("Index: " + playlist.currentIndex)
-                                    playMusic.play()
+                                    if (folderModel.isFolder(filePath)) {
+                                        Jarray.clear()
+                                        playMusic.stop()
+                                        folderModel.folder = Qt.resolvedUrl(filePath)
+                                        if (fileName == "..") {
+                                            tab.title = folderModel.folder.toString().replace("file://", "")
+                                        } else {
+                                            tab.title = filePath
+                                        }
+                                    } else {
+                                        playMusic.stop()
+                                        playMusic.source = Qt.resolvedUrl(filePath)
+                                        playlist.currentIndex = index
+                                        page.playing = playlist.currentIndex
+                                        console.log("Playing click: "+playMusic.source)
+                                        console.log("Index: " + playlist.currentIndex)
+                                        playMusic.play()
+                                    }
+                                }
+                                Component.onCompleted: {
+                                    if (!Jarray.contains(filePath) && !folderModel.isFolder(filePath)) {
+                                        console.log("Adding file:" + filePath)
+                                        Jarray.addItem(filePath)
+                                    }
                                 }
                             }
-                            Component.onCompleted: {
-                                console.log("Adding file:" + filePath)
-                                Jarray.addItem(filePath)
-                                playMusic.source = Qt.resolvedUrl(filePath)
-                            }
+
                         }
                     }
                     model: folderModel
@@ -119,40 +136,46 @@ MainView {
                 }
                 Rectangle {
                     anchors.bottom: parent.bottom
-                    height: units.gu(8)
+                    height: units.gu(4)
                     width: parent.width
-                    TextField {
-                        id: foldertext
-                        placeholderText: "/home/user/Music"
-                        anchors.top: parent.top
-                        anchors.left: parent.left
+                    ListItem.Standard {
+                        text: "Shuffle?"
                         height: units.gu(4)
-                        width: 2* parent.width / 3
-
-                        font.pixelSize: 20
+                        width: parent.width / 2
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+                        control: Switch {
+                            anchors.centerIn: parent
+                            id: randomswitch
+                        }
                     }
                     Button {
-                        id: load
-                        text: "Load"
-                        anchors.top: parent.top
+                        id: up
+                        text: "Return"
+                        anchors.bottom: parent.bottom
                         anchors.right: parent.right
                         height: units.gu(4)
-                        width: parent.width / 3
+                        width: parent.width / 4
                         color: "#DD4814";
 
                         onClicked: {
                             Jarray.clear()
                             playMusic.stop()
-                            folderModel.folder = Qt.resolvedUrl(foldertext.text)
+                            tab.title = folderModel.parentFolder.toString().replace("file://", "")
+                            folderModel.folder = Qt.resolvedUrl(folderModel.parentFolder)
                         }
                     }
-                    ListItem.Standard {
-                        text: "Random?"
-                        height: units.gu(4)
+                    Button {
+                        id: stop
+                        text: "Stop"
                         anchors.bottom: parent.bottom
-                        control: Switch {
-                            anchors.centerIn: parent
-                            id: randomswitch
+                        anchors.right: up.left
+                        height: units.gu(4)
+                        width: parent.width / 4
+                        color: "#DD4814";
+
+                        onClicked: {
+                            playMusic.stop()
                         }
                     }
                 }
