@@ -106,6 +106,8 @@ MainView {
                             id: file
                             text: fileName
                             progression: !fileName.match("\\.mp3")
+                            icon: fileName.match("\\.mp3") ? Qt.resolvedUrl("music.png") : Qt.resolvedUrl("folder.png")
+                            iconFrame: false
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
