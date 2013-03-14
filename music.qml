@@ -164,17 +164,41 @@ MainView {
                     height: units.gu(8)
                     width: parent.width
                     ListItem.Standard {
+                        text: "Shuffle?"
+                        height: units.gu(4)
+                        width: 3 * parent.width / 4
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        control: Switch {
+                            anchors.centerIn: parent
+                            id: randomswitch
+                        }
+                    }
+                    Button {
+                        id: stop
+                        text: "Stop"
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        height: units.gu(4)
+                        width: parent.width / 4
+                        color: "#DD4814";
+
+                        onClicked: {
+                            playMusic.stop()
+                        }
+                    }
+                    ListItem.Standard {
                         id: currentpath
                         text: Storage.getSetting("initialized") === "true" ? Storage.getSetting("currentfolder") : "/"
                         height: units.gu(4)
                         width: 3 * parent.width / 4
-                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
                         anchors.left: parent.left
                     }
                     Button {
                         id: up
                         text: "Return"
-                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
                         anchors.right: parent.right
                         height: units.gu(4)
                         width: parent.width / 4
@@ -188,30 +212,6 @@ MainView {
                             page.loaded = 0
                             currentpath.text = folderModel.folder.toString().replace("file://", "")
                             Storage.setSetting("currentfolder", currentpath.text)
-                        }
-                    }
-                    ListItem.Standard {
-                        text: "Shuffle?"
-                        height: units.gu(4)
-                        width: 3 * parent.width / 4
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        control: Switch {
-                            anchors.centerIn: parent
-                            id: randomswitch
-                        }
-                    }
-                    Button {
-                        id: stop
-                        text: "Stop"
-                        anchors.bottom: parent.bottom
-                        anchors.right: parent.right
-                        height: units.gu(4)
-                        width: parent.width / 4
-                        color: "#DD4814";
-
-                        onClicked: {
-                            playMusic.stop()
                         }
                     }
                 }
