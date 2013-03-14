@@ -5,6 +5,7 @@ import Ubuntu.Components.ListItems 0.1 as ListItem
 import QtMultimedia 5.0
 import Qt.labs.folderlistmodel 1.0
 import "script.js" as Jarray
+import "storage.js" as Storage
 
 /*!
     \brief MainView with Tabs element.
@@ -31,7 +32,16 @@ MainView {
             title: i18n.tr("Music")
             
             // Tab content begins here
-
+            Component.onCompleted: {
+                Storage.initialize()
+                console.debug("INITIALIZED")
+                if (Storage.getSetting("initialized") !== "true") {
+                    // initialize settings
+                    console.debug("reset settings")
+                    Storage.setSetting("initialized", "true")
+                    Storage.setSetting("currentfolder", "/")
+                }
+            }
             page: Page {
                 id: page
                 property int playing: 0
@@ -97,7 +107,7 @@ MainView {
                         showDotAndDotDot: true
                         showDirsFirst: true
                         nameFilters: ["*.mp3"]
-                        folder: Qt.resolvedUrl("/")
+                        folder: Storage.getSetting("initialized") === "true" ? Qt.resolvedUrl(Storage.getSetting("currentfolder")) : Qt.resolvedUrl("/")
                         showOnlyReadable: true
                     }
 
@@ -120,10 +130,11 @@ MainView {
                                         playlist.currentIndex = 0
                                         page.loaded = 0
                                         if (fileName == "..") {
-                                            tab.title = folderModel.folder.toString().replace("file://", "")
+                                            currentpath.text = folderModel.folder.toString().replace("file://", "")
                                         } else {
-                                            tab.title = filePath
+                                            currentpath.text = filePath
                                         }
+                                        Storage.setSetting("currentfolder", currentpath.text)
                                     } else {
                                         playMusic.stop()
                                         playMusic.source = Qt.resolvedUrl(filePath)
@@ -150,23 +161,20 @@ MainView {
                 }
                 Rectangle {
                     anchors.bottom: parent.bottom
-                    height: units.gu(4)
+                    height: units.gu(8)
                     width: parent.width
                     ListItem.Standard {
-                        text: "Shuffle?"
+                        id: currentpath
+                        text: Storage.getSetting("initialized") === "true" ? Storage.getSetting("currentfolder") : "/"
                         height: units.gu(4)
-                        width: parent.width / 2
-                        anchors.bottom: parent.bottom
+                        width: 3 * parent.width / 4
+                        anchors.top: parent.top
                         anchors.left: parent.left
-                        control: Switch {
-                            anchors.centerIn: parent
-                            id: randomswitch
-                        }
                     }
                     Button {
                         id: up
                         text: "Return"
-                        anchors.bottom: parent.bottom
+                        anchors.top: parent.top
                         anchors.right: parent.right
                         height: units.gu(4)
                         width: parent.width / 4
@@ -175,17 +183,29 @@ MainView {
                         onClicked: {
                             Jarray.clear()
                             playMusic.stop()
-                            tab.title = folderModel.parentFolder.toString().replace("file://", "")
                             folderModel.folder = Qt.resolvedUrl(folderModel.parentFolder)
                             playlist.currentIndex = 0
                             page.loaded = 0
+                            currentpath.text = folderModel.folder.toString().replace("file://", "")
+                            Storage.setSetting("currentfolder", currentpath.text)
+                        }
+                    }
+                    ListItem.Standard {
+                        text: "Shuffle?"
+                        height: units.gu(4)
+                        width: 3 * parent.width / 4
+                        anchors.bottom: parent.bottom
+                        anchors.left: parent.left
+                        control: Switch {
+                            anchors.centerIn: parent
+                            id: randomswitch
                         }
                     }
                     Button {
                         id: stop
                         text: "Stop"
                         anchors.bottom: parent.bottom
-                        anchors.right: up.left
+                        anchors.right: parent.right
                         height: units.gu(4)
                         width: parent.width / 4
                         color: "#DD4814";
