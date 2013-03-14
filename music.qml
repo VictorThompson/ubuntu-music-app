@@ -35,6 +35,7 @@ MainView {
             page: Page {
                 id: page
                 property int playing: 0
+                property int loaded: 0
                 property variant arr: []
                 Component {
                     id: highlight
@@ -64,19 +65,22 @@ MainView {
                                 if (randomswitch.checked) {
                                     var now = new Date();
                                     var seed = now.getSeconds();
-                                    var num = (Math.floor(playlist.count * Math.random(seed)));
-                                    playMusic.source = Qt.resolvedUrl(Jarray.getList()[num])
+                                    var num = (Math.floor((Jarray.size() - 1) * Math.random(seed)));
+                                    playMusic.source = Qt.resolvedUrl(Jarray.getList()[Jarray.at(num)])
                                     page.playing = num
-                                    playlist.currentIndex = num
+                                    playlist.currentIndex = Jarray.at(num) + 1
                                 } else {
-                                    if (page.playing < playlist.count - 1) {
-                                        playMusic.source = Qt.resolvedUrl(Jarray.getList()[page.playing + 1])
+                                    if (page.playing < Jarray.size() - 1) {
+                                        console.log("page.playing: " + page.playing)
+                                        console.log("playlist.count: " + playlist.count)
+                                        console.log("Jarray.size(): " + Jarray.size())
                                         page.playing++
-                                        playlist.currentIndex = page.playing
+                                        playMusic.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
+                                        playlist.currentIndex++
                                     } else {
-                                        playMusic.source = Qt.resolvedUrl(Jarray.getList()[0])
                                         page.playing = 0
-                                        playlist.currentIndex = 0
+                                        playMusic.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
+                                        playlist.currentIndex = page.playing + (playlist.count - Jarray.size())
                                     }
                                 }
                                 console.log("Playing: "+playMusic.source)
@@ -109,6 +113,8 @@ MainView {
                                         Jarray.clear()
                                         playMusic.stop()
                                         folderModel.folder = Qt.resolvedUrl(filePath)
+                                        playlist.currentIndex = 0
+                                        page.loaded = 0
                                         if (fileName == "..") {
                                             tab.title = folderModel.folder.toString().replace("file://", "")
                                         } else {
@@ -118,7 +124,7 @@ MainView {
                                         playMusic.stop()
                                         playMusic.source = Qt.resolvedUrl(filePath)
                                         playlist.currentIndex = index
-                                        page.playing = playlist.currentIndex
+                                        page.playing = Jarray.indexOf(filePath)
                                         console.log("Playing click: "+playMusic.source)
                                         console.log("Index: " + playlist.currentIndex)
                                         playMusic.play()
@@ -128,8 +134,10 @@ MainView {
                             Component.onCompleted: {
                                 if (!Jarray.contains(filePath) && fileName.match("\\.mp3")) {
                                     console.log("Adding file:" + filePath)
-                                    Jarray.addItem(filePath)
+                                    Jarray.addItem(filePath, page.loaded)
+                                    console.log(page.loaded)
                                 }
+                                page.loaded++
                             }
                         }
                     }
@@ -165,6 +173,8 @@ MainView {
                             playMusic.stop()
                             tab.title = folderModel.parentFolder.toString().replace("file://", "")
                             folderModel.folder = Qt.resolvedUrl(folderModel.parentFolder)
+                            playlist.currentIndex = 0
+                            page.loaded = 0
                         }
                     }
                     Button {
