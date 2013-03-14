@@ -98,6 +98,7 @@ MainView {
                         showDirsFirst: true
                         nameFilters: ["*.mp3"]
                         folder: Qt.resolvedUrl("/")
+                        showOnlyReadable: true
                     }
 
                     Component {
