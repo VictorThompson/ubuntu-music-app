@@ -120,6 +120,17 @@ MainView {
                             icon: fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("folder.png")
                             iconFrame: false
                             height: 60
+                            Image {
+                                id: playindicator
+                                source: ""
+                                anchors.right: parent.right
+                                opacity: .5
+                            }
+                            onFocusChanged: {
+                                if (focus == false) {
+                                    playindicator.source = ""
+                                }
+                            }
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
@@ -136,13 +147,26 @@ MainView {
                                         }
                                         Storage.setSetting("currentfolder", currentpath.text)
                                     } else {
-                                        playMusic.stop()
-                                        playMusic.source = Qt.resolvedUrl(filePath)
-                                        playlist.currentIndex = index
-                                        page.playing = Jarray.indexOf(filePath)
-                                        console.log("Playing click: "+playMusic.source)
-                                        console.log("Index: " + playlist.currentIndex)
-                                        playMusic.play()
+                                        console.log("Source: " + playMusic.source.toString())
+                                        console.log("fileName: " + fileName)
+                                        if (playlist.currentIndex == index) {
+                                            if (playMusic.playbackState === MediaPlayer.PlayingState)  {
+                                                playindicator.source = "play.png"
+                                                playMusic.pause()
+                                            } else {
+                                                playindicator.source = "pause.png"
+                                                playMusic.play()
+                                            }
+                                        } else {
+                                            playMusic.stop()
+                                            playMusic.source = Qt.resolvedUrl(filePath)
+                                            playlist.currentIndex = index
+                                            page.playing = Jarray.indexOf(filePath)
+                                            console.log("Playing click: "+playMusic.source)
+                                            console.log("Index: " + playlist.currentIndex)
+                                            playMusic.play()
+                                            playindicator.source = "pause.png"
+                                        }
                                     }
                                 }
                             }
