@@ -124,6 +124,7 @@ MainView {
                                 id: playindicator
                                 source: ""
                                 anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
                                 opacity: .5
                             }
                             onFocusChanged: {
