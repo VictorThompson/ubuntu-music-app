@@ -129,6 +129,8 @@ MainView {
                             onFocusChanged: {
                                 if (focus == false) {
                                     playindicator.source = ""
+                                } else if (file.progression == false){
+                                    playindicator.source = "pause.png"
                                 }
                             }
                             MouseArea {
