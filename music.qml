@@ -218,10 +218,11 @@ MainView {
                         width: 3 * parent.width / 4
                         anchors.bottom: parent.bottom
                         anchors.left: parent.left
+                        opacity: .5
                     }
                     Button {
                         id: up
-                        text: "Return"
+                        text: "Up"
                         anchors.bottom: parent.bottom
                         anchors.right: parent.right
                         height: units.gu(4)
