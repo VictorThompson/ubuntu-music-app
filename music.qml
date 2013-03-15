@@ -16,21 +16,21 @@ import "storage.js" as Storage
 MainView {
     // objectName for functional testing purposes (autopilot-qt5)
     objectName: "music"
-    
+
     width: units.gu(50)
     height: units.gu(75)
-    
+
     Tabs {
         id: tabs
         anchors.fill: parent
-        
+
         // First tab begins here
         Tab {
             id: tab
             objectName: "Tab1"
-            
+
             title: i18n.tr("Music")
-            
+
             // Tab content begins here
             Component.onCompleted: {
                 Storage.initialize()

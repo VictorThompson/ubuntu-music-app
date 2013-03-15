@@ -12,6 +12,8 @@ run
 * Ubuntu 12.10
 * qt 5 proper (includes qtquick 2.0)
 * The Ubuntu SDK
+* Qt 5 folderlistmodel QML plugin (qtdeclarative5-folderlistmodel-plugin)
+* Qt 5 Multimedia QML plugin (libqt5declarative5-qtmultimedia-plugin)
 
 If you don't have one of these, go [here](http://developer.ubuntu.com/get-started/gomobile/#step-get-toolkit) to install them.
 
