@@ -142,7 +142,7 @@ MainView {
                         MouseArea {
                             anchors.fill: parent
                             onPressAndHold: {
-                                if (playlist.currentIndex == index) {
+                                if (playlist.currentIndex == index && !folderModel.isFolder(index)) {
                                     popover.caller = file
                                     popover.artist = playMusic.metaData.albumArtist
                                     popover.album = playMusic.metaData.albumTitle
