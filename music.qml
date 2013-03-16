@@ -2,6 +2,7 @@ import QtQuick 2.0
 import QtQuick.LocalStorage 2.0
 import Ubuntu.Components 0.1
 import Ubuntu.Components.ListItems 0.1 as ListItem
+import Ubuntu.Components.Popups 0.1
 import QtMultimedia 5.0
 import Qt.labs.folderlistmodel 1.0
 import "script.js" as Jarray
@@ -62,6 +63,18 @@ MainView {
                 width: parent.width
                 highlight: highlight
                 highlightFollowsCurrentItem: true
+
+                Popover {
+                    id: popover
+                    property string artist
+                    property string album
+                    property string song
+
+                    ListItem.Standard {
+                        text: "Artist: " + popover.artist + "\nAlbum: " + popover.album + "\nSong: " + popover.song
+                    }
+                    visible: false
+                }
 
                 MediaPlayer {
                     id: playMusic
@@ -128,6 +141,15 @@ MainView {
                         }
                         MouseArea {
                             anchors.fill: parent
+                            onPressAndHold: {
+                                if (playlist.currentIndex == index) {
+                                    popover.caller = file
+                                    popover.artist = playMusic.metaData.albumArtist
+                                    popover.album = playMusic.metaData.albumTitle
+                                    popover.song = playMusic.metaData.title
+                                    popover.show();
+                                }
+                            }
                             onClicked: {
                                 if (folderModel.isFolder(index)) {
                                     Jarray.clear()
