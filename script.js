@@ -29,4 +29,5 @@ function size() {
 
 function clear() {
     myArray = []
+    myLocation = []
 }

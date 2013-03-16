@@ -71,9 +71,9 @@ MainView {
                                 var now = new Date();
                                 var seed = now.getSeconds();
                                 var num = (Math.floor((Jarray.size() - 1) * Math.random(seed)));
-                                playMusic.source = Qt.resolvedUrl(Jarray.getList()[Jarray.at(num)])
+                                playMusic.source = Qt.resolvedUrl(Jarray.getList()[num])
                                 page.playing = num
-                                playlist.currentIndex = Jarray.at(num) + 1
+                                playlist.currentIndex = Jarray.at(num)
                             } else {
                                 if (page.playing < Jarray.size() - 1) {
                                     console.log("page.playing: " + page.playing)
@@ -111,8 +111,8 @@ MainView {
                     ListItem.Standard {
                         id: file
                         text: fileName
-                        progression: !fileName.match("\\.mp3|\\.ogg")
-                        icon: fileName.match("\\.mp3|\\.ogg") ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : Qt.resolvedUrl("folder.png")
+                        progression: !fileName.match("\\.(mp3|ogg)$")
+                        icon: fileName.match("\\.(mp3|ogg)$") ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : Qt.resolvedUrl("folder.png")
                         iconFrame: false
                         height: 60
                         Image {
@@ -132,7 +132,7 @@ MainView {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (!fileName.match("\\.mp3|\\.ogg")) {
+                                if (!fileName.match("\\.(mp3|ogg)$")) {
                                     Jarray.clear()
                                     playMusic.stop()
                                     folderModel.folder = Qt.resolvedUrl(filePath)
@@ -169,7 +169,7 @@ MainView {
                             }
                         }
                         Component.onCompleted: {
-                            if (!Jarray.contains(filePath) && fileName.match("\\.mp3|\\.ogg")) {
+                            if (!Jarray.contains(filePath) && fileName.match("\\.(mp3|ogg)$")) {
                                 console.log("Adding file:" + filePath)
                                 Jarray.addItem(filePath, page.loaded)
                                 console.log(page.loaded)
