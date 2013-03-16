@@ -101,7 +101,7 @@ MainView {
                     //       a folder that has .mp3 in the name. Bug probably isn't in showDirs or showDotAndDotDot.
                     showDotAndDotDot: true
                     showDirsFirst: true
-                    nameFilters: ["*.mp3"]
+                    nameFilters: ["*.mp3", "*.ogg"]
                     folder: Storage.getSetting("initialized") === "true" ? Qt.resolvedUrl(Storage.getSetting("currentfolder")) : Qt.resolvedUrl("/")
                     showOnlyReadable: true
                 }
@@ -111,8 +111,8 @@ MainView {
                     ListItem.Standard {
                         id: file
                         text: fileName
-                        progression: !fileName.match("\\.mp3")
-                        icon: fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("folder.png")
+                        progression: !fileName.match("\\.mp3|\\.ogg")
+                        icon: fileName.match("\\.mp3|\\.ogg") ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : Qt.resolvedUrl("folder.png")
                         iconFrame: false
                         height: 60
                         Image {
@@ -132,7 +132,7 @@ MainView {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (!fileName.match("\\.mp3")) {
+                                if (!fileName.match("\\.mp3|\\.ogg")) {
                                     Jarray.clear()
                                     playMusic.stop()
                                     folderModel.folder = Qt.resolvedUrl(filePath)
@@ -169,7 +169,7 @@ MainView {
                             }
                         }
                         Component.onCompleted: {
-                            if (!Jarray.contains(filePath) && fileName.match("\\.mp3")) {
+                            if (!Jarray.contains(filePath) && fileName.match("\\.mp3|\\.ogg")) {
                                 console.log("Adding file:" + filePath)
                                 Jarray.addItem(filePath, page.loaded)
                                 console.log(page.loaded)
