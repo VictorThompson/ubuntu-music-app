@@ -77,14 +77,14 @@ MainView {
                 }
 
                 MediaPlayer {
-                    id: playMusic
+                    id: player
                     onStatusChanged: {
                         if (status == MediaPlayer.EndOfMedia) {
                             if (randomswitch.checked) {
                                 var now = new Date();
                                 var seed = now.getSeconds();
                                 var num = (Math.floor((Jarray.size() - 1) * Math.random(seed)));
-                                playMusic.source = Qt.resolvedUrl(Jarray.getList()[num])
+                                player.source = Qt.resolvedUrl(Jarray.getList()[num])
                                 page.playing = num
                                 filelist.currentIndex = Jarray.at(num)
                             } else {
@@ -93,16 +93,16 @@ MainView {
                                     console.log("filelist.count: " + filelist.count)
                                     console.log("Jarray.size(): " + Jarray.size())
                                     page.playing++
-                                    playMusic.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
+                                    player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
                                     filelist.currentIndex++
                                 } else {
                                     page.playing = 0
-                                    playMusic.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
+                                    player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
                                     filelist.currentIndex = page.playing + (filelist.count - Jarray.size())
                                 }
                             }
-                            console.log("Playing: "+playMusic.source)
-                            playMusic.play()
+                            console.log("Playing: "+player.source)
+                            player.play()
                         }
                     }
                 }
@@ -144,16 +144,16 @@ MainView {
                             onPressAndHold: {
                                 if (filelist.currentIndex == index && !folderModel.isFolder(index)) {
                                     popover.caller = file
-                                    popover.artist = playMusic.metaData.albumArtist
-                                    popover.album = playMusic.metaData.albumTitle
-                                    popover.song = playMusic.metaData.title
+                                    popover.artist = player.metaData.albumArtist
+                                    popover.album = player.metaData.albumTitle
+                                    popover.song = player.metaData.title
                                     popover.show();
                                 }
                             }
                             onClicked: {
                                 if (folderModel.isFolder(index)) {
                                     Jarray.clear()
-                                    playMusic.stop()
+                                    player.stop()
                                     folderModel.folder = Qt.resolvedUrl(filePath)
                                     filelist.currentIndex = 0
                                     page.loaded = 0
@@ -164,24 +164,24 @@ MainView {
                                     }
                                     Storage.setSetting("currentfolder", currentpath.text)
                                 } else {
-                                    console.log("Source: " + playMusic.source.toString())
+                                    console.log("Source: " + player.source.toString())
                                     console.log("fileName: " + fileName)
                                     if (filelist.currentIndex == index) {
-                                        if (playMusic.playbackState === MediaPlayer.PlayingState)  {
+                                        if (player.playbackState === MediaPlayer.PlayingState)  {
                                             playindicator.source = "play.png"
-                                            playMusic.pause()
+                                            player.pause()
                                         } else {
                                             playindicator.source = "pause.png"
-                                            playMusic.play()
+                                            player.play()
                                         }
                                     } else {
-                                        playMusic.stop()
-                                        playMusic.source = Qt.resolvedUrl(filePath)
+                                        player.stop()
+                                        player.source = Qt.resolvedUrl(filePath)
                                         filelist.currentIndex = index
                                         page.playing = Jarray.indexOf(filePath)
-                                        console.log("Playing click: "+playMusic.source)
+                                        console.log("Playing click: "+player.source)
                                         console.log("Index: " + filelist.currentIndex)
-                                        playMusic.play()
+                                        player.play()
                                         playindicator.source = "pause.png"
                                     }
                                 }
@@ -225,7 +225,7 @@ MainView {
                     color: "#DD4814";
 
                     onClicked: {
-                        playMusic.stop()
+                        player.stop()
                     }
                 }
                 ListItem.Standard {
@@ -248,7 +248,7 @@ MainView {
 
                     onClicked: {
                         Jarray.clear()
-                        playMusic.stop()
+                        player.stop()
                         folderModel.folder = Qt.resolvedUrl(folderModel.parentFolder)
                         filelist.currentIndex = 0
                         page.loaded = 0
