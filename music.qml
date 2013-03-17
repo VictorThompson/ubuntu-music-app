@@ -78,6 +78,7 @@ MainView {
 
                 MediaPlayer {
                     id: player
+                    muted: false
                     onStatusChanged: {
                         if (status == MediaPlayer.EndOfMedia) {
                             if (randomswitch.checked) {
