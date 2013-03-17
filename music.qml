@@ -58,7 +58,7 @@ MainView {
                 }
             }
             ListView {
-                id: playlist
+                id: filelist
                 height: parent.height - units.gu(8)
                 width: parent.width
                 highlight: highlight
@@ -86,19 +86,19 @@ MainView {
                                 var num = (Math.floor((Jarray.size() - 1) * Math.random(seed)));
                                 playMusic.source = Qt.resolvedUrl(Jarray.getList()[num])
                                 page.playing = num
-                                playlist.currentIndex = Jarray.at(num)
+                                filelist.currentIndex = Jarray.at(num)
                             } else {
                                 if (page.playing < Jarray.size() - 1) {
                                     console.log("page.playing: " + page.playing)
-                                    console.log("playlist.count: " + playlist.count)
+                                    console.log("filelist.count: " + filelist.count)
                                     console.log("Jarray.size(): " + Jarray.size())
                                     page.playing++
                                     playMusic.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
-                                    playlist.currentIndex++
+                                    filelist.currentIndex++
                                 } else {
                                     page.playing = 0
                                     playMusic.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
-                                    playlist.currentIndex = page.playing + (playlist.count - Jarray.size())
+                                    filelist.currentIndex = page.playing + (filelist.count - Jarray.size())
                                 }
                             }
                             console.log("Playing: "+playMusic.source)
@@ -142,7 +142,7 @@ MainView {
                         MouseArea {
                             anchors.fill: parent
                             onPressAndHold: {
-                                if (playlist.currentIndex == index && !folderModel.isFolder(index)) {
+                                if (filelist.currentIndex == index && !folderModel.isFolder(index)) {
                                     popover.caller = file
                                     popover.artist = playMusic.metaData.albumArtist
                                     popover.album = playMusic.metaData.albumTitle
@@ -155,7 +155,7 @@ MainView {
                                     Jarray.clear()
                                     playMusic.stop()
                                     folderModel.folder = Qt.resolvedUrl(filePath)
-                                    playlist.currentIndex = 0
+                                    filelist.currentIndex = 0
                                     page.loaded = 0
                                     if (fileName == "..") {
                                         currentpath.text = folderModel.folder.toString().replace("file://", "")
@@ -166,7 +166,7 @@ MainView {
                                 } else {
                                     console.log("Source: " + playMusic.source.toString())
                                     console.log("fileName: " + fileName)
-                                    if (playlist.currentIndex == index) {
+                                    if (filelist.currentIndex == index) {
                                         if (playMusic.playbackState === MediaPlayer.PlayingState)  {
                                             playindicator.source = "play.png"
                                             playMusic.pause()
@@ -177,10 +177,10 @@ MainView {
                                     } else {
                                         playMusic.stop()
                                         playMusic.source = Qt.resolvedUrl(filePath)
-                                        playlist.currentIndex = index
+                                        filelist.currentIndex = index
                                         page.playing = Jarray.indexOf(filePath)
                                         console.log("Playing click: "+playMusic.source)
-                                        console.log("Index: " + playlist.currentIndex)
+                                        console.log("Index: " + filelist.currentIndex)
                                         playMusic.play()
                                         playindicator.source = "pause.png"
                                     }
@@ -250,7 +250,7 @@ MainView {
                         Jarray.clear()
                         playMusic.stop()
                         folderModel.folder = Qt.resolvedUrl(folderModel.parentFolder)
-                        playlist.currentIndex = 0
+                        filelist.currentIndex = 0
                         page.loaded = 0
                         currentpath.text = folderModel.folder.toString().replace("file://", "")
                         Storage.setSetting("currentfolder", currentpath.text)
