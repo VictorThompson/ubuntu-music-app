@@ -44,26 +44,10 @@ MainView {
             property int itemnum: 0
             property variant arr: []
             title: i18n.tr("Music")
-            Component {
-                id: highlight
-                Rectangle {
-                    width: parent.width; height: 40
-                    border.color: "#DD4814";
-                    border.width: 3
-                    Behavior on y {
-                        SpringAnimation {
-                            spring: 3
-                            damping: 0.2
-                        }
-                    }
-                }
-            }
             ListView {
                 id: filelist
                 height: parent.height - units.gu(8)
                 width: parent.width
-                highlight: highlight
-                highlightFollowsCurrentItem: true
                 model: folderModel
                 delegate: fileDelegate
 
@@ -128,19 +112,20 @@ MainView {
                         progression: model.isDir
                         icon: !model.isDir ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : Qt.resolvedUrl("folder.png")
                         iconFrame: false
-                        height: 60
                         Image {
                             id: playindicator
                             source: ""
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
-                            opacity: .5
+                            opacity: .7
                         }
                         onFocusChanged: {
                             if (focus == false) {
                                 playindicator.source = ""
+                                selected = false
                             } else if (file.progression == false){
                                 playindicator.source = "pause.png"
+                                selected = true
                             }
                         }
                         onPressAndHold: {
