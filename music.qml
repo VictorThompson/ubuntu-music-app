@@ -134,7 +134,9 @@ MainView {
                         onFocusChanged: {
                             if (focus == false) {
                                 playindicator.source = ""
-                            } else if (file.progression == false){
+                            // TODO: Fix bug with currentIndex getting set to seemingly random (but consistent) values when changing to a folder
+                            //       Prevent this "highlighted" item from displaying the pause indicator until it is playing.
+                            } else if (file.progression == false && player.playbackState === MediaPlayer.PlayingState){
                                 playindicator.source = "pause.png"
                             }
                         }
