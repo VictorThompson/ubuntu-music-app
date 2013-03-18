@@ -12,7 +12,7 @@ run
 * Ubuntu 12.10
 * qt 5 proper (includes qtquick 2.0)
 * The Ubuntu SDK
-* folderlistmodel plugin (lp:~vthompson/ubuntu-filemanager-app/qml-folderlistmodel)
+* folderlistmodel plugin (lp:~vthompson/ubuntu-music-app/qml-folderlistmodel)
 
 If you don't have one of these, go [here](http://developer.ubuntu.com/get-started/gomobile/#step-get-toolkit) to install them.
 
