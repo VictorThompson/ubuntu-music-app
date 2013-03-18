@@ -36,6 +36,7 @@ MainView {
                 Storage.setSetting("initialized", "true")
                 Storage.setSetting("currentfolder", "/")
             }
+            filelist.currentIndex = -1
         }
         Page {
             id: page
@@ -63,6 +64,8 @@ MainView {
                 width: parent.width
                 highlight: highlight
                 highlightFollowsCurrentItem: true
+                model: folderModel
+                delegate: fileDelegate
 
                 Popover {
                     id: popover
@@ -88,6 +91,7 @@ MainView {
                                 player.source = Qt.resolvedUrl(Jarray.getList()[num])
                                 page.playing = num
                                 filelist.currentIndex = Jarray.at(num)
+                                console.log("MediaPlayer statusChanged, currentIndex: " + filelist.currentIndex)
                             } else {
                                 if (page.playing < Jarray.size() - 1) {
                                     console.log("page.playing: " + page.playing)
@@ -101,6 +105,7 @@ MainView {
                                     player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
                                     filelist.currentIndex = page.playing + (filelist.count - Jarray.size())
                                 }
+                                console.log("MediaPlayer statusChanged, currentIndex: " + filelist.currentIndex)
                             }
                             console.log("Playing: "+player.source)
                             player.play()
@@ -134,9 +139,7 @@ MainView {
                         onFocusChanged: {
                             if (focus == false) {
                                 playindicator.source = ""
-                            // TODO: Fix bug with currentIndex getting set to seemingly random (but consistent) values when changing to a folder
-                            //       Prevent this "highlighted" item from displaying the pause indicator until it is playing.
-                            } else if (file.progression == false && player.playbackState === MediaPlayer.PlayingState){
+                            } else if (file.progression == false){
                                 playindicator.source = "pause.png"
                             }
                         }
@@ -153,14 +156,13 @@ MainView {
                             if (model.isDir) {
                                 Jarray.clear()
                                 player.stop()
-                                filelist.currentIndex = 0
+                                filelist.currentIndex = -1
                                 page.itemnum = 0
                                 currentpath.text = filePath.toString()
                                 Storage.setSetting("currentfolder", currentpath.text.toString())
                                 console.log("Stored:" + Storage.getSetting("currentfolder"))
                                 folderModel.path = filePath
                             } else {
-                                console.log("Source: " + player.source.toString())
                                 console.log("fileName: " + fileName)
                                 if (filelist.currentIndex == index) {
                                     if (player.playbackState === MediaPlayer.PlayingState)  {
@@ -180,6 +182,7 @@ MainView {
                                     player.play()
                                     playindicator.source = "pause.png"
                                 }
+                                console.log("Source: " + player.source.toString())
                             }
                         }
                         Component.onCompleted: {
@@ -192,8 +195,6 @@ MainView {
                         }
                     }
                 }
-                model: folderModel
-                delegate: fileDelegate
             }
             Rectangle {
                 anchors.bottom: parent.bottom
@@ -245,7 +246,7 @@ MainView {
                         Jarray.clear()
                         player.stop()
                         folderModel.path = folderModel.parentPath
-                        filelist.currentIndex = 0
+                        filelist.currentIndex = -1
                         page.itemnum = 0
                         currentpath.text = folderModel.path
                         Storage.setSetting("currentfolder", currentpath.text)
