@@ -153,6 +153,9 @@ MainView {
                             }
                         }
                         onClicked: {
+                            if (focus == false) {
+                                focus = true
+                            }
                             if (model.isDir) {
                                 Jarray.clear()
                                 player.stop()
@@ -222,6 +225,7 @@ MainView {
 
                     onClicked: {
                         player.stop()
+                        filelist.currentItem.focus = false
                     }
                 }
                 ListItem.Standard {
