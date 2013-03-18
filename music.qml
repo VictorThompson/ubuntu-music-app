@@ -4,7 +4,7 @@ import Ubuntu.Components 0.1
 import Ubuntu.Components.ListItems 0.1 as ListItem
 import Ubuntu.Components.Popups 0.1
 import QtMultimedia 5.0
-import Qt.labs.folderlistmodel 1.0
+import org.nemomobile.folderlistmodel 1.0
 import "script.js" as Jarray
 import "storage.js" as Storage
 
@@ -40,7 +40,7 @@ MainView {
         Page {
             id: page
             property int playing: 0
-            property int loaded: 0
+            property int itemnum: 0
             property variant arr: []
             title: i18n.tr("Music")
             Component {
@@ -84,7 +84,7 @@ MainView {
                             if (randomswitch.checked) {
                                 var now = new Date();
                                 var seed = now.getSeconds();
-                                var num = (Math.floor((Jarray.size() - 1) * Math.random(seed)));
+                                var num = (Math.floor((Jarray.size()) * Math.random(seed)));
                                 player.source = Qt.resolvedUrl(Jarray.getList()[num])
                                 page.playing = num
                                 filelist.currentIndex = Jarray.at(num)
@@ -109,12 +109,10 @@ MainView {
                 }
                 FolderListModel {
                     id: folderModel
-                    showDirs: true
-                    showDotAndDotDot: true
-                    showDirsFirst: true
+                    showDirectories: true
+                    filterDirectories: false
                     nameFilters: ["*.mp3", "*.ogg"]
-                    folder: Storage.getSetting("initialized") === "true" ? Qt.resolvedUrl(Storage.getSetting("currentfolder")) : Qt.resolvedUrl("/")
-                    showOnlyReadable: true
+                    path: Storage.getSetting("initialized") === "true" ? Storage.getSetting("currentfolder") : homePath()
                 }
 
                 Component {
@@ -122,8 +120,8 @@ MainView {
                     ListItem.Standard {
                         id: file
                         text: fileName
-                        progression: folderModel.isFolder(index)
-                        icon: !folderModel.isFolder(index) ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : Qt.resolvedUrl("folder.png")
+                        progression: model.isDir
+                        icon: !model.isDir ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : Qt.resolvedUrl("folder.png")
                         iconFrame: false
                         height: 60
                         Image {
@@ -140,61 +138,55 @@ MainView {
                                 playindicator.source = "pause.png"
                             }
                         }
-                        MouseArea {
-                            anchors.fill: parent
-                            onPressAndHold: {
-                                if (filelist.currentIndex == index && !folderModel.isFolder(index)) {
-                                    popover.caller = file
-                                    popover.artist = player.metaData.albumArtist
-                                    popover.album = player.metaData.albumTitle
-                                    popover.song = player.metaData.title
-                                    popover.show();
-                                }
+                        onPressAndHold: {
+                            if (filelist.currentIndex == index && !model.isDir) {
+                                popover.caller = file
+                                popover.artist = player.metaData.albumArtist
+                                popover.album = player.metaData.albumTitle
+                                popover.song = player.metaData.title
+                                popover.show();
                             }
-                            onClicked: {
-                                if (folderModel.isFolder(index)) {
-                                    Jarray.clear()
-                                    player.stop()
-                                    folderModel.folder = Qt.resolvedUrl(filePath)
-                                    filelist.currentIndex = 0
-                                    page.loaded = 0
-                                    if (fileName == "..") {
-                                        currentpath.text = folderModel.folder.toString().replace("file://", "")
+                        }
+                        onClicked: {
+                            if (model.isDir) {
+                                Jarray.clear()
+                                player.stop()
+                                filelist.currentIndex = 0
+                                page.itemnum = 0
+                                currentpath.text = filePath.toString()
+                                Storage.setSetting("currentfolder", currentpath.text.toString())
+                                console.log("Stored:" + Storage.getSetting("currentfolder"))
+                                folderModel.path = filePath
+                            } else {
+                                console.log("Source: " + player.source.toString())
+                                console.log("fileName: " + fileName)
+                                if (filelist.currentIndex == index) {
+                                    if (player.playbackState === MediaPlayer.PlayingState)  {
+                                        playindicator.source = "play.png"
+                                        player.pause()
                                     } else {
-                                        currentpath.text = filePath
-                                    }
-                                    Storage.setSetting("currentfolder", currentpath.text)
-                                } else {
-                                    console.log("Source: " + player.source.toString())
-                                    console.log("fileName: " + fileName)
-                                    if (filelist.currentIndex == index) {
-                                        if (player.playbackState === MediaPlayer.PlayingState)  {
-                                            playindicator.source = "play.png"
-                                            player.pause()
-                                        } else {
-                                            playindicator.source = "pause.png"
-                                            player.play()
-                                        }
-                                    } else {
-                                        player.stop()
-                                        player.source = Qt.resolvedUrl(filePath)
-                                        filelist.currentIndex = index
-                                        page.playing = Jarray.indexOf(filePath)
-                                        console.log("Playing click: "+player.source)
-                                        console.log("Index: " + filelist.currentIndex)
-                                        player.play()
                                         playindicator.source = "pause.png"
+                                        player.play()
                                     }
+                                } else {
+                                    player.stop()
+                                    player.source = Qt.resolvedUrl(filePath)
+                                    filelist.currentIndex = index
+                                    page.playing = Jarray.indexOf(filePath)
+                                    console.log("Playing click: "+player.source)
+                                    console.log("Index: " + filelist.currentIndex)
+                                    player.play()
+                                    playindicator.source = "pause.png"
                                 }
                             }
                         }
                         Component.onCompleted: {
-                            if (!Jarray.contains(filePath) && !folderModel.isFolder(index)) {
+                            if (!Jarray.contains(filePath) && !model.isDir) {
                                 console.log("Adding file:" + filePath)
-                                Jarray.addItem(filePath, page.loaded)
-                                console.log(page.loaded)
+                                Jarray.addItem(filePath, page.itemnum)
+                                console.log(page.itemnum)
                             }
-                            page.loaded++
+                            page.itemnum++
                         }
                     }
                 }
@@ -231,7 +223,7 @@ MainView {
                 }
                 ListItem.Standard {
                     id: currentpath
-                    text: Storage.getSetting("initialized") === "true" ? Storage.getSetting("currentfolder") : "/"
+                    text: folderModel.path
                     height: units.gu(4)
                     width: 3 * parent.width / 4
                     anchors.bottom: parent.bottom
@@ -250,10 +242,10 @@ MainView {
                     onClicked: {
                         Jarray.clear()
                         player.stop()
-                        folderModel.folder = Qt.resolvedUrl(folderModel.parentFolder)
+                        folderModel.path = folderModel.parentPath
                         filelist.currentIndex = 0
-                        page.loaded = 0
-                        currentpath.text = folderModel.folder.toString().replace("file://", "")
+                        page.itemnum = 0
+                        currentpath.text = folderModel.path
                         Storage.setSetting("currentfolder", currentpath.text)
                     }
                 }
