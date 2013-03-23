@@ -50,17 +50,22 @@ MainView {
                 width: parent.width
                 model: folderModel
                 delegate: fileDelegate
+                Component {
+                    id: dialogcomponent
+                    Dialog {
+                        id: dialog
+                        property string artist
+                        property string album
+                        property string song
+                        title: "Song Information"
+                        text: "Artist: " + player.metaData.albumArtist + "\nAlbum: " + player.metaData.albumTitle + "\nSong: " + player.metaData.title
 
-                Popover {
-                    id: popover
-                    property string artist
-                    property string album
-                    property string song
-
-                    ListItem.Standard {
-                        text: "Artist: " + popover.artist + "\nAlbum: " + popover.album + "\nSong: " + popover.song
+                        Button {
+                            text: "OK"
+                            color: "#DD4814"
+                            onClicked: PopupUtils.close(dialog)
+                        }
                     }
-                    visible: false
                 }
 
                 MediaPlayer {
@@ -130,11 +135,7 @@ MainView {
                         }
                         onPressAndHold: {
                             if (filelist.currentIndex == index && !model.isDir) {
-                                popover.caller = file
-                                popover.artist = player.metaData.albumArtist
-                                popover.album = player.metaData.albumTitle
-                                popover.song = player.metaData.title
-                                popover.show();
+                                PopupUtils.open(dialogcomponent, file)
                             }
                         }
                         onClicked: {
