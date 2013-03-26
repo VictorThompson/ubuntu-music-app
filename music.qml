@@ -88,8 +88,29 @@ MainView {
             tools: ToolbarActions {
                 active: true
                 Action {
-                    text: "Shuffle"
-                    iconSource: page.random ? "image://gicon/edit-delete-symbolic" : "image://gicon/object-select-symbolic"
+                    text: "Mute"
+                    iconSource: "image://gicon/audio-volume-muted-symbolic"
+                    onTriggered: {
+                        player.volume = 0
+                    }
+                }
+                Action {
+                    text: "Down"
+                    iconSource: "image://gicon/audio-volume-low-symbolic"
+                    onTriggered: {
+                        player.volume -= .1
+                    }
+                }
+                Action {
+                    text: "Up"
+                    iconSource: "image://gicon/audio-volume-high-symbolic"
+                    onTriggered: {
+                        player.volume += .1
+                    }
+                }
+                Action {
+                    text: "Shuffle?"
+                    iconSource: page.random ? "image://gicon/edit-delete-symbolic" : "image://gicon/media-playlist-shuffle-symbolic"
                     onTriggered: {
                         page.random = !page.random
                     }
@@ -111,6 +132,15 @@ MainView {
                     text: "Next"
                     iconSource: "image://gicon/media-skip-forward-symbolic"
                     onTriggered: page.nextSong()
+                }
+                Action {
+                    text: "Info"
+                    iconSource: "image://gicon/audio-x-generic-symbolic"
+                    onTriggered: {
+                        if (player.playbackState === MediaPlayer.PlayingState || player.playbackState === MediaPlayer.PausedState) {
+                            PopupUtils.open(dialogcomponent, filelist.currentItem)
+                        }
+                    }
                 }
                 Action {
                     text: "Up"
