@@ -42,12 +42,95 @@ MainView {
             id: page
             property int playing: 0
             property int itemnum: 0
-            property variant arr: []
+            property bool random: false
             title: i18n.tr("Music")
+
+            function previousSong() {
+                getSong(-1)
+            }
+            function nextSong() {
+                getSong(1)
+            }
+
+            function getSong(direction) {
+                if (page.random) {
+                    var now = new Date();
+                    var seed = now.getSeconds();
+                    var num = (Math.floor((Jarray.size()) * Math.random(seed)));
+                    player.source = Qt.resolvedUrl(Jarray.getList()[num])
+                    page.playing = num
+                    filelist.currentIndex = Jarray.at(num)
+                    console.log("MediaPlayer statusChanged, currentIndex: " + filelist.currentIndex)
+                } else {
+                    if ((page.playing < Jarray.size() - 1 && direction === 1 )
+                            || (page.playing > 0 && direction === -1)) {
+                        console.log("page.playing: " + page.playing)
+                        console.log("filelist.count: " + filelist.count)
+                        console.log("Jarray.size(): " + Jarray.size())
+                        page.playing += direction
+                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
+                        filelist.currentIndex += direction
+                    } else if(direction === 1) {
+                        page.playing = 0
+                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
+                        filelist.currentIndex = page.playing + (filelist.count - Jarray.size())
+                    } else if(direction === -1) {
+                        page.playing = Jarray.size() - 1
+                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
+                        filelist.currentIndex = page.playing + (filelist.count - Jarray.size())
+                    }
+                    console.log("MediaPlayer statusChanged, currentIndex: " + filelist.currentIndex)
+                }
+                console.log("Playing: "+player.source)
+                player.play()
+            }
+
+            tools: ToolbarActions {
+                active: true
+                Action {
+                    text: "Shuffle"
+                    iconSource: page.random ? "image://gicon/edit-delete-symbolic" : "image://gicon/object-select-symbolic"
+                    onTriggered: {
+                        page.random = !page.random
+                    }
+                }
+                Action {
+                    text: "Previous"
+                    iconSource: "image://gicon/media-skip-backward-symbolic"
+                    onTriggered: page.previousSong()
+                }
+                Action {
+                    text: "Stop"
+                    iconSource: "image://gicon/media-playback-stop-symbolic"
+                    onTriggered: {
+                        filelist.currentItem.focus = false
+                        player.stop()
+                    }
+                }
+                Action {
+                    text: "Next"
+                    iconSource: "image://gicon/media-skip-forward-symbolic"
+                    onTriggered: page.nextSong()
+                }
+                Action {
+                    text: "Up"
+                    iconSource: "image://gicon/go-up-symbolic"
+                    onTriggered: {
+                        Jarray.clear()
+                        player.stop()
+                        folderModel.path = folderModel.parentPath
+                        filelist.currentIndex = -1
+                        page.itemnum = 0
+                        currentpath.text = folderModel.path
+                        Storage.setSetting("currentfolder", currentpath.text)
+                    }
+                }
+            }
+
             ListView {
                 id: filelist
-                height: parent.height - units.gu(8)
                 width: parent.width
+                height: parent.height - units.gu(4)
                 model: folderModel
                 delegate: fileDelegate
                 Component {
@@ -73,31 +156,7 @@ MainView {
                     muted: false
                     onStatusChanged: {
                         if (status == MediaPlayer.EndOfMedia) {
-                            if (randomswitch.checked) {
-                                var now = new Date();
-                                var seed = now.getSeconds();
-                                var num = (Math.floor((Jarray.size()) * Math.random(seed)));
-                                player.source = Qt.resolvedUrl(Jarray.getList()[num])
-                                page.playing = num
-                                filelist.currentIndex = Jarray.at(num)
-                                console.log("MediaPlayer statusChanged, currentIndex: " + filelist.currentIndex)
-                            } else {
-                                if (page.playing < Jarray.size() - 1) {
-                                    console.log("page.playing: " + page.playing)
-                                    console.log("filelist.count: " + filelist.count)
-                                    console.log("Jarray.size(): " + Jarray.size())
-                                    page.playing++
-                                    player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
-                                    filelist.currentIndex++
-                                } else {
-                                    page.playing = 0
-                                    player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
-                                    filelist.currentIndex = page.playing + (filelist.count - Jarray.size())
-                                }
-                                console.log("MediaPlayer statusChanged, currentIndex: " + filelist.currentIndex)
-                            }
-                            console.log("Playing: "+player.source)
-                            player.play()
+                            page.nextSong()
                         }
                     }
                 }
@@ -186,34 +245,9 @@ MainView {
                 }
             }
             Rectangle {
-                anchors.bottom: parent.bottom
-                height: units.gu(8)
+                anchors.top: filelist.bottom
+                height: units.gu(4)
                 width: parent.width
-                ListItem.Standard {
-                    text: "Shuffle?"
-                    height: units.gu(4)
-                    width: 3 * parent.width / 4
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    control: Switch {
-                        anchors.centerIn: parent
-                        id: randomswitch
-                    }
-                }
-                Button {
-                    id: stop
-                    text: "Stop"
-                    anchors.top: parent.top
-                    anchors.right: parent.right
-                    height: units.gu(4)
-                    width: parent.width / 4
-                    color: "#DD4814";
-
-                    onClicked: {
-                        player.stop()
-                        filelist.currentItem.focus = false
-                    }
-                }
                 ListItem.Standard {
                     id: currentpath
                     text: folderModel.path
@@ -222,25 +256,6 @@ MainView {
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
                     opacity: .5
-                }
-                Button {
-                    id: up
-                    text: "Up"
-                    anchors.bottom: parent.bottom
-                    anchors.right: parent.right
-                    height: units.gu(4)
-                    width: parent.width / 4
-                    color: "#DD4814";
-
-                    onClicked: {
-                        Jarray.clear()
-                        player.stop()
-                        folderModel.path = folderModel.parentPath
-                        filelist.currentIndex = -1
-                        page.itemnum = 0
-                        currentpath.text = folderModel.path
-                        Storage.setSetting("currentfolder", currentpath.text)
-                    }
                 }
             }
         }
