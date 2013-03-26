@@ -98,14 +98,14 @@ MainView {
                     text: "Down"
                     iconSource: "image://gicon/audio-volume-low-symbolic"
                     onTriggered: {
-                        player.volume -= .1
+                        if (player.volume >= .1) player.volume -= .1
                     }
                 }
                 Action {
                     text: "Up"
                     iconSource: "image://gicon/audio-volume-high-symbolic"
                     onTriggered: {
-                        player.volume += .1
+                        if (player.volume <= .9) player.volume += .1
                     }
                 }
                 Action {
