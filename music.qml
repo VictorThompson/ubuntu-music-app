@@ -207,12 +207,6 @@ MainView {
                             page.nextSong()
                         }
                     }
-                    onPlaybackStateChanged: {
-                        console.log("PlaybackState change")
-                        if (playbackState == MediaPlayer.PlayingState) {
-                          console.log("Playing state")
-                        }
-                    }
                 }
                 FolderListModel {
                     id: folderModel
@@ -226,7 +220,6 @@ MainView {
                     id: fileDelegate
                     ListItem.Standard {
                         id: file
-                        //text: fileName
                         progression: model.isDir
                         icon: !model.isDir ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : Qt.resolvedUrl("folder.png")
                         iconFrame: false
@@ -272,6 +265,7 @@ MainView {
                                 selected = false
                             }
                         }
+
                         onPressAndHold: {
                             if (filelist.currentIndex == index && !model.isDir) {
                                 PopupUtils.open(dialogcomponent, file)
