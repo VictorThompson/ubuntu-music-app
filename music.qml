@@ -43,7 +43,22 @@ MainView {
             property int playing: 0
             property int itemnum: 0
             property bool random: false
+
             title: i18n.tr("Music")
+
+            Component {
+                id: highlight
+                Rectangle {
+                    width: 5; height: 40
+                    color: "#DD4814";
+                    Behavior on y {
+                        SpringAnimation {
+                            spring: 3
+                            damping: 0.2
+                        }
+                    }
+                }
+            }
 
             function previousSong() {
                 getSong(-1)
@@ -161,8 +176,11 @@ MainView {
                 id: filelist
                 width: parent.width
                 height: parent.height - units.gu(4)
+                highlight: highlight
+                highlightFollowsCurrentItem: true
                 model: folderModel
                 delegate: fileDelegate
+
                 Component {
                     id: dialogcomponent
                     Dialog {
@@ -189,12 +207,18 @@ MainView {
                             page.nextSong()
                         }
                     }
+                    onPlaybackStateChanged: {
+                        console.log("PlaybackState change")
+                        if (playbackState == MediaPlayer.PlayingState) {
+                          console.log("Playing state")
+                        }
+                    }
                 }
                 FolderListModel {
                     id: folderModel
                     showDirectories: true
                     filterDirectories: false
-                    nameFilters: ["*.mp3", "*.ogg"]
+                    nameFilters: ["*.mp3", "*.ogg","*.flac"]
                     path: Storage.getSetting("initialized") === "true" ? Storage.getSetting("currentfolder") : homePath()
                 }
 
@@ -202,7 +226,7 @@ MainView {
                     id: fileDelegate
                     ListItem.Standard {
                         id: file
-                        text: fileName
+                        //text: fileName
                         progression: model.isDir
                         icon: !model.isDir ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : Qt.resolvedUrl("folder.png")
                         iconFrame: false
@@ -213,18 +237,46 @@ MainView {
                             anchors.verticalCenter: parent.verticalCenter
                             opacity: .7
                         }
+                        Label {
+                            id: fileTitle
+                            width: 400
+                            wrapMode: Text.Wrap
+                            maximumLineCount: 1
+                            font.pixelSize: 16
+                            anchors.left: parent.left
+                            anchors.leftMargin: 75
+                            anchors.top: parent.top
+                            anchors.topMargin: 5
+                            text: fileName
+                        }
+                        Label {
+                            id: fileArtistAlbum
+                            width: 400
+                            wrapMode: Text.Wrap
+                            maximumLineCount: 2
+                            font.pixelSize: 12
+                            anchors.left: parent.left
+                            anchors.leftMargin: 75
+                            anchors.top: fileTitle.bottom
+                            text: ""
+                        }
+
                         onFocusChanged: {
                             if (focus == false) {
                                 playindicator.source = ""
                                 selected = false
+                                fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
+                                fileTitle.text = player.metaData.title
                             } else if (file.progression == false){
                                 playindicator.source = "pause.png"
-                                selected = true
+                                selected = false
                             }
                         }
                         onPressAndHold: {
                             if (filelist.currentIndex == index && !model.isDir) {
                                 PopupUtils.open(dialogcomponent, file)
+                                fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
+                                fileTitle.text = player.metaData.title
                             }
                         }
                         onClicked: {
