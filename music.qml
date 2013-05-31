@@ -73,8 +73,8 @@ MainView {
                     var seed = now.getSeconds();
                     var num = (Math.floor((Jarray.size()) * Math.random(seed)));
                     player.source = Qt.resolvedUrl(Jarray.getList()[num])
-                    page.playing = num
                     filelist.currentIndex = Jarray.at(num)
+                    page.playing = num
                     console.log("MediaPlayer statusChanged, currentIndex: " + filelist.currentIndex)
                 } else {
                     if ((page.playing < Jarray.size() - 1 && direction === 1 )
@@ -83,16 +83,16 @@ MainView {
                         console.log("filelist.count: " + filelist.count)
                         console.log("Jarray.size(): " + Jarray.size())
                         page.playing += direction
-                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
                         filelist.currentIndex += direction
+                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
                     } else if(direction === 1) {
                         page.playing = 0
-                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
                         filelist.currentIndex = page.playing + (filelist.count - Jarray.size())
+                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
                     } else if(direction === -1) {
                         page.playing = Jarray.size() - 1
-                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
                         filelist.currentIndex = page.playing + (filelist.count - Jarray.size())
+                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
                     }
                     console.log("MediaPlayer statusChanged, currentIndex: " + filelist.currentIndex)
                 }
@@ -175,7 +175,7 @@ MainView {
             ListView {
                 id: filelist
                 width: parent.width
-                height: parent.height - units.gu(4)
+                height: parent.height - units.gu(10)
                 highlight: highlight
                 highlightFollowsCurrentItem: true
                 model: folderModel
@@ -223,13 +223,6 @@ MainView {
                         progression: model.isDir
                         icon: !model.isDir ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : Qt.resolvedUrl("folder.png")
                         iconFrame: false
-                        Image {
-                            id: playindicator
-                            source: ""
-                            anchors.right: parent.right
-                            anchors.verticalCenter: parent.verticalCenter
-                            opacity: .7
-                        }
                         Label {
                             id: fileTitle
                             width: 400
@@ -253,16 +246,30 @@ MainView {
                             anchors.top: fileTitle.bottom
                             text: ""
                         }
+                        Label {
+                            id: fileDuration
+                            width: 400
+                            wrapMode: Text.Wrap
+                            maximumLineCount: 2
+                            font.pixelSize: 12
+                            anchors.left: parent.left
+                            anchors.leftMargin: 75
+                            anchors.top: fileArtistAlbum.bottom
+                            visible: false
+                            text: ""
+                        }
 
                         onFocusChanged: {
                             if (focus == false) {
-                                playindicator.source = ""
                                 selected = false
                                 fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
                                 fileTitle.text = player.metaData.title
                             } else if (file.progression == false){
                                 playindicator.source = "pause.png"
                                 selected = false
+                                fileArtistAlbumBottom.text = fileArtistAlbum.text
+                                fileTitleBottom.text = fileTitle.text
+                                iconbottom.source = file.icon
                             }
                         }
 
@@ -270,7 +277,9 @@ MainView {
                             if (filelist.currentIndex == index && !model.isDir) {
                                 PopupUtils.open(dialogcomponent, file)
                                 fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
+                                fileArtistAlbumBottom.text = fileArtistAlbum.text
                                 fileTitle.text = player.metaData.title
+                                fileTitleBottom.text = fileTitle.text
                             }
                         }
                         onClicked: {
@@ -307,6 +316,15 @@ MainView {
                                     playindicator.source = "pause.png"
                                 }
                                 console.log("Source: " + player.source.toString())
+                                if (player.duration >= 0) {
+                                    fileDuration.text = Math.round(player.duration / 60000).toString() + ":" + Math.round((player.duration / 1000) % 60).toString()
+                                    fileDurationBottom.text = fileDuration.text
+                                } else if (fileDuration.text !== "") {
+
+                                    fileDurationBottom.text = fileDuration.text
+                                } else {
+                                    fileDurationBottom.text = "0:00"
+                                }
                             }
                         }
                         Component.onCompleted: {
@@ -322,8 +340,77 @@ MainView {
             }
             Rectangle {
                 anchors.top: filelist.bottom
-                height: units.gu(4)
+                height: units.gu(10)
                 width: parent.width
+                color: "#333333"
+                UbuntuShape {
+                    id: thumbshape
+                    height: parent.height * .75
+                    width: parent.height * .75
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: parent.right
+                    radius: "none"
+                    image: Image {
+                        id: playindicator
+                        source: ""
+                        anchors.right: parent.right
+                        anchors.centerIn: parent
+                        opacity: .7
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            if (player.playbackState === MediaPlayer.PlayingState)  {
+                                playindicator.source = "play.png"
+                                player.pause()
+                            } else {
+                                playindicator.source = "pause.png"
+                                player.play()
+                            }
+                        }
+                    }
+                }
+                Image {
+                    id: iconbottom
+                    source: ""
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.topMargin:  5
+                }
+                Label {
+                    id: fileTitleBottom
+                    width: 400
+                    wrapMode: Text.Wrap
+                    color: "#FFFFFF"
+                    maximumLineCount: 1
+                    font.pixelSize: 16
+                    anchors.left: iconbottom.right
+                    anchors.top: parent.top
+                    anchors.topMargin: 5
+                    text: fileName
+                }
+                Label {
+                    id: fileArtistAlbumBottom
+                    width: 400
+                    wrapMode: Text.Wrap
+                    color: "#FFFFFF"
+                    maximumLineCount: 1
+                    font.pixelSize: 12
+                    anchors.left: iconbottom.right
+                    anchors.top: fileTitleBottom.bottom
+                    text: ""
+                }
+                Label {
+                    id: fileDurationBottom
+                    width: 400
+                    wrapMode: Text.Wrap
+                    color: "#FFFFFF"
+                    maximumLineCount: 1
+                    font.pixelSize: 12
+                    anchors.left: iconbottom.right
+                    anchors.top: fileArtistAlbumBottom.bottom
+                    text: ""
+                }
                 ListItem.Standard {
                     id: currentpath
                     text: folderModel.path
