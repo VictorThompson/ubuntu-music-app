@@ -264,7 +264,9 @@ MainView {
                                 selected = false
                                 fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
                                 fileTitle.text = player.metaData.title
-                                fileDuration.text = Math.round(player.duration / 60000).toString() + ":" + Math.round((player.duration / 1000) % 60).toString()
+                                fileDuration.text = Math.round(player.duration / 60000).toString() + ":" + (
+                                        Math.round((player.duration / 1000) % 60)<10 ? "0"+Math.round((player.duration / 1000) % 60).toString() :
+                                                                                       Math.round((player.duration / 1000) % 60).toString())
                             } else if (file.progression == false){
                                 playindicator.source = "pause.png"
                                 selected = false
@@ -318,7 +320,9 @@ MainView {
                                 }
                                 console.log("Source: " + player.source.toString())
                                 if (player.duration >= 0) {
-                                    fileDuration.text = Math.round(player.duration / 60000).toString() + ":" + Math.round((player.duration / 1000) % 60).toString()
+                                    fileDuration.text = Math.round(player.duration / 60000).toString() + ":" + (
+                                            Math.round((player.duration / 1000) % 60)<10 ? "0"+Math.round((player.duration / 1000) % 60).toString() :
+                                                                                           Math.round((player.duration / 1000) % 60).toString())
                                     fileDurationBottom.text = fileDuration.text
                                 } else if (fileDuration.text !== "") {
 
