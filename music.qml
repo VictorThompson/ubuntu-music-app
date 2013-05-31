@@ -264,6 +264,7 @@ MainView {
                                 selected = false
                                 fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
                                 fileTitle.text = player.metaData.title
+                                fileDuration.text = Math.round(player.duration / 60000).toString() + ":" + Math.round((player.duration / 1000) % 60).toString()
                             } else if (file.progression == false){
                                 playindicator.source = "pause.png"
                                 selected = false
