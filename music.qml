@@ -308,6 +308,10 @@ MainView {
                                         playindicator.source = "pause.png"
                                         player.play()
                                     }
+                                    fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
+                                    fileArtistAlbumBottom.text = fileArtistAlbum.text
+                                    fileTitle.text = player.metaData.title
+                                    fileTitleBottom.text = fileTitle.text
                                 } else {
                                     player.stop()
                                     player.source = Qt.resolvedUrl(filePath)
