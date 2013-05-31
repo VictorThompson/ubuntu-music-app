@@ -71,7 +71,11 @@ MainView {
                 if (page.random) {
                     var now = new Date();
                     var seed = now.getSeconds();
-                    var num = (Math.floor((Jarray.size()) * Math.random(seed)));
+                    do {
+                        var num = (Math.floor((Jarray.size()) * Math.random(seed)));
+                        console.log(num)
+                        console.log(page.playing)
+                    } while (num == page.playing && Jarray.size() > 0)
                     player.source = Qt.resolvedUrl(Jarray.getList()[num])
                     filelist.currentIndex = Jarray.at(num)
                     page.playing = num
