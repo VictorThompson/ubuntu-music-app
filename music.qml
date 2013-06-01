@@ -227,6 +227,7 @@ MainView {
                         id: file
                         progression: model.isDir
                         icon: !model.isDir ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : Qt.resolvedUrl("folder.png")
+//                        icon: !model.isDir ? (trackCover === "" ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : trackCover) : Qt.resolvedUrl("folder.png")
                         iconFrame: false
                         Label {
                             id: fileTitle
@@ -238,7 +239,7 @@ MainView {
                             anchors.leftMargin: 75
                             anchors.top: parent.top
                             anchors.topMargin: 5
-                            text: fileName
+                            text: trackTitle == "" ? fileName : trackTitle
                         }
                         Label {
                             id: fileArtistAlbum
@@ -249,7 +250,7 @@ MainView {
                             anchors.left: parent.left
                             anchors.leftMargin: 75
                             anchors.top: fileTitle.bottom
-                            text: ""
+                            text: trackArtist == "" ? "" : trackArtist + " - " + trackAlbum
                         }
                         Label {
                             id: fileDuration
@@ -267,11 +268,11 @@ MainView {
                         onFocusChanged: {
                             if (focus == false) {
                                 selected = false
-                                fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
-                                fileTitle.text = player.metaData.title
-                                fileDuration.text = Math.round(player.duration / 60000).toString() + ":" + (
-                                            Math.round((player.duration / 1000) % 60)<10 ? "0"+Math.round((player.duration / 1000) % 60).toString() :
-                                                                                           Math.round((player.duration / 1000) % 60).toString())
+//                                fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
+//                                fileTitle.text = player.metaData.title
+//                                fileDuration.text = Math.round(trackLength / 60).toString() + ":" + (
+//                                            Math.round(trackLength % 60)<10 ? "0"+Math.round(trackLength % 60).toString() :
+//                                                                                           Math.round(trackLength % 60).toString())
                             } else if (file.progression == false){
                                 playindicator.source = ""
                                 selected = false
@@ -284,10 +285,10 @@ MainView {
                         onPressAndHold: {
                             if (filelist.currentIndex == index && !model.isDir) {
                                 PopupUtils.open(dialogcomponent, file)
-                                fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
-                                fileArtistAlbumBottom.text = fileArtistAlbum.text
-                                fileTitle.text = player.metaData.title
-                                fileTitleBottom.text = fileTitle.text
+//                                fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
+//                                fileArtistAlbumBottom.text = fileArtistAlbum.text
+//                                fileTitle.text = player.metaData.title
+//                                fileTitleBottom.text = fileTitle.text
                             }
                         }
                         onClicked: {
@@ -313,10 +314,10 @@ MainView {
                                         playindicator.source = "pause.png"
                                         player.play()
                                     }
-                                    fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
-                                    fileArtistAlbumBottom.text = fileArtistAlbum.text
-                                    fileTitle.text = player.metaData.title
-                                    fileTitleBottom.text = fileTitle.text
+//                                    fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
+//                                    fileArtistAlbumBottom.text = fileArtistAlbum.text
+//                                    fileTitle.text = player.metaData.title
+//                                    fileTitleBottom.text = fileTitle.text
                                 } else {
                                     player.stop()
                                     player.source = Qt.resolvedUrl(filePath)
@@ -328,13 +329,13 @@ MainView {
                                     playindicator.source = "pause.png"
                                 }
                                 console.log("Source: " + player.source.toString())
-                                if (player.duration >= 0) {
-                                    fileDuration.text = Math.round(player.duration / 60000).toString() + ":" + (
-                                                Math.round((player.duration / 1000) % 60)<10 ? "0"+Math.round((player.duration / 1000) % 60).toString() :
-                                                                                               Math.round((player.duration / 1000) % 60).toString())
+                                console.log("Length: " + trackLength.toString())
+                                if (trackLength !== "") {
+                                    fileDuration.text = Math.round(trackLength / 60).toString() + ":" + (
+                                                Math.round(trackLength % 60)<10 ? "0"+Math.round(trackLength % 60).toString() :
+                                                                                               Math.round(trackLength % 60).toString())
                                     fileDurationBottom.text = fileDuration.text
                                 } else if (fileDuration.text !== "") {
-
                                     fileDurationBottom.text = fileDuration.text
                                 } else {
                                     fileDurationBottom.text = "0:00"
@@ -401,7 +402,7 @@ MainView {
                     anchors.left: iconbottom.right
                     anchors.top: parent.top
                     anchors.topMargin: 5
-                    text: fileName
+                    text: ""
                 }
                 Label {
                     id: fileArtistAlbumBottom
