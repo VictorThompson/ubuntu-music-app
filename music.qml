@@ -38,6 +38,7 @@ MainView {
             }
             filelist.currentIndex = -1
         }
+
         Page {
             id: page
             property int playing: 0
@@ -177,6 +178,31 @@ MainView {
                 }
             }
 
+            MediaPlayer {
+                id: player
+                muted: false
+                onStatusChanged: {
+                    if (status == MediaPlayer.EndOfMedia) {
+                        page.nextSong()
+                    }
+                }
+                onStopped: {
+                    playindicator.source = "play.png"
+                }
+
+                onPositionChanged: {
+                    fileDurationProgressBackground.visible = true
+                    fileDurationProgress.width = Math.round((player.position*100)/player.duration) * 2
+                    fileDurationBottom.text = Math.round((player.position/1000) / 60).toString() + ":" + (
+                                Math.round((player.position/1000) % 60)<10 ? "0"+Math.round((player.position/1000) % 60).toString() :
+                                                                  Math.round((player.position/1000) % 60).toString())
+                    fileDurationBottom.text += " / "
+                    fileDurationBottom.text += Math.round((player.duration/1000) / 60).toString() + ":" + (
+                                Math.round((player.duration/1000) % 60)<10 ? "0"+Math.round((player.duration/1000) % 60).toString() :
+                                                                  Math.round((player.duration/1000) % 60).toString())
+                }
+            }
+
             ListView {
                 id: filelist
                 width: parent.width
@@ -204,15 +230,6 @@ MainView {
                     }
                 }
 
-                MediaPlayer {
-                    id: player
-                    muted: false
-                    onStatusChanged: {
-                        if (status == MediaPlayer.EndOfMedia) {
-                            page.nextSong()
-                        }
-                    }
-                }
                 FolderListModel {
                     id: folderModel
                     showDirectories: true
@@ -273,19 +290,12 @@ MainView {
                                 fileArtistAlbumBottom.text = fileArtistAlbum.text
                                 fileTitleBottom.text = fileTitle.text
                                 iconbottom.source = file.icon
-                                fileDurationBottom.text = Math.round(trackLength / 60).toString() + ":" + (
-                                            Math.round(trackLength % 60)<10 ? "0"+Math.round(trackLength % 60).toString() :
-                                                                              Math.round(trackLength % 60).toString())
                             }
                         }
 
                         onPressAndHold: {
                             if (filelist.currentIndex == index && !model.isDir) {
                                 PopupUtils.open(dialogcomponent, file)
-//                                fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
-//                                fileArtistAlbumBottom.text = fileArtistAlbum.text
-//                                fileTitle.text = player.metaData.title
-//                                fileTitleBottom.text = fileTitle.text
                             }
                         }
                         onClicked: {
@@ -311,10 +321,6 @@ MainView {
                                         playindicator.source = "pause.png"
                                         player.play()
                                     }
-//                                    fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
-//                                    fileArtistAlbumBottom.text = fileArtistAlbum.text
-//                                    fileTitle.text = player.metaData.title
-//                                    fileTitleBottom.text = fileTitle.text
                                 } else {
                                     player.stop()
                                     player.source = Qt.resolvedUrl(filePath)
@@ -327,16 +333,6 @@ MainView {
                                 }
                                 console.log("Source: " + player.source.toString())
                                 console.log("Length: " + trackLength.toString())
-                                if (trackLength !== "") {
-                                    fileDuration.text = Math.round(trackLength / 60).toString() + ":" + (
-                                                Math.round(trackLength % 60)<10 ? "0"+Math.round(trackLength % 60).toString() :
-                                                                                               Math.round(trackLength % 60).toString())
-                                    fileDurationBottom.text = fileDuration.text
-                                } else if (fileDuration.text !== "") {
-                                    fileDurationBottom.text = fileDuration.text
-                                } else {
-                                    fileDurationBottom.text = "0:00"
-                                }
                             }
                         }
                         Component.onCompleted: {
@@ -387,23 +383,23 @@ MainView {
                     source: ""
                     anchors.left: parent.left
                     anchors.top: parent.top
-                    anchors.topMargin:  5
+                    anchors.topMargin: units.gu(1)
                 }
                 Label {
                     id: fileTitleBottom
-                    width: 400
+                    width: units.gu(400)
                     wrapMode: Text.Wrap
                     color: "#FFFFFF"
                     maximumLineCount: 1
                     font.pixelSize: 16
                     anchors.left: iconbottom.right
                     anchors.top: parent.top
-                    anchors.topMargin: 5
+                    anchors.topMargin: units.gu(1)
                     text: ""
                 }
                 Label {
                     id: fileArtistAlbumBottom
-                    width: 400
+                    width: units.gu(400)
                     wrapMode: Text.Wrap
                     color: "#FFFFFF"
                     maximumLineCount: 1
@@ -412,15 +408,41 @@ MainView {
                     anchors.top: fileTitleBottom.bottom
                     text: ""
                 }
+                Rectangle {
+                    id: fileDurationProgressContainer
+                    anchors.top: fileArtistAlbumBottom.bottom
+                    anchors.left: iconbottom.right
+                    anchors.topMargin: 2
+                    width: 200
+                    color: "#333333"
+
+                    Rectangle {
+                        id: fileDurationProgressBackground
+                        anchors.top: parent.top
+                        anchors.topMargin: 2
+                        height: 1
+                        width: 200
+                        color: "#FFFFFF"
+                        visible: false
+                    }
+                    Rectangle {
+                        id: fileDurationProgress
+                        anchors.top: parent.top
+                        height: 5
+                        width: 0
+                        color: "#DD4814"
+                    }
+                }
                 Label {
                     id: fileDurationBottom
-                    width: 400
+                    anchors.top: fileArtistAlbumBottom.bottom
+                    anchors.left: fileDurationProgressContainer.right
+                    anchors.leftMargin: units.gu(1)
+                    width: units.gu(30)
                     wrapMode: Text.Wrap
                     color: "#FFFFFF"
                     maximumLineCount: 1
                     font.pixelSize: 12
-                    anchors.left: iconbottom.right
-                    anchors.top: fileArtistAlbumBottom.bottom
                     text: ""
                 }
                 ListItem.Standard {
