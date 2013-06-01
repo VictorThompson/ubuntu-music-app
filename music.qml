@@ -268,17 +268,14 @@ MainView {
                         onFocusChanged: {
                             if (focus == false) {
                                 selected = false
-//                                fileArtistAlbum.text = player.metaData.albumArtist + " - " + player.metaData.albumTitle
-//                                fileTitle.text = player.metaData.title
-//                                fileDuration.text = Math.round(trackLength / 60).toString() + ":" + (
-//                                            Math.round(trackLength % 60)<10 ? "0"+Math.round(trackLength % 60).toString() :
-//                                                                                           Math.round(trackLength % 60).toString())
                             } else if (file.progression == false){
-                                playindicator.source = ""
                                 selected = false
                                 fileArtistAlbumBottom.text = fileArtistAlbum.text
                                 fileTitleBottom.text = fileTitle.text
                                 iconbottom.source = file.icon
+                                fileDurationBottom.text = Math.round(trackLength / 60).toString() + ":" + (
+                                            Math.round(trackLength % 60)<10 ? "0"+Math.round(trackLength % 60).toString() :
+                                                                              Math.round(trackLength % 60).toString())
                             }
                         }
 
