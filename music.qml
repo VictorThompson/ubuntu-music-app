@@ -109,79 +109,6 @@ MainView {
                 player.play()
             }
 
-//            tools: ToolbarActions {
-//                id: playertoolbar
-//                active: true
-//                Action {
-//                    text: "Mute"
-//                    iconSource: "image://gicon/audio-volume-muted-symbolic"
-//                    onTriggered: {
-//                        player.volume = 0
-//                    }
-//                }
-//                Action {
-//                    text: "Down"
-//                    iconSource: "image://gicon/audio-volume-low-symbolic"
-//                    onTriggered: {
-//                        if (player.volume >= .1) player.volume -= .1
-//                    }
-//                }
-//                Action {
-//                    text: "Up"
-//                    iconSource: "image://gicon/audio-volume-high-symbolic"
-//                    onTriggered: {
-//                        if (player.volume <= .9) player.volume += .1
-//                    }
-//                }
-//                Action {
-//                    text: "Shuffle?"
-//                    iconSource: page.random ? "image://gicon/edit-delete-symbolic" : "image://gicon/media-playlist-shuffle-symbolic"
-//                    onTriggered: {
-//                        page.random = !page.random
-//                    }
-//                }
-//                Action {
-//                    text: "Previous"
-//                    iconSource: "image://gicon/media-skip-backward-symbolic"
-//                    onTriggered: page.previousSong()
-//                }
-//                Action {
-//                    text: "Stop"
-//                    iconSource: "image://gicon/media-playback-stop-symbolic"
-//                    onTriggered: {
-//                        player.stop()
-//                        playindicator.source = "play.png"
-//                    }
-//                }
-//                Action {
-//                    text: "Next"
-//                    iconSource: "image://gicon/media-skip-forward-symbolic"
-//                    onTriggered: page.nextSong()
-//                }
-//                Action {
-//                    text: "Info"
-//                    iconSource: "image://gicon/audio-x-generic-symbolic"
-//                    onTriggered: {
-//                        if (player.playbackState === MediaPlayer.PlayingState || player.playbackState === MediaPlayer.PausedState) {
-//                            PopupUtils.open(dialogcomponent, filelist.currentItem)
-//                        }
-//                    }
-//                }
-//                Action {
-//                    text: "Up"
-//                    iconSource: "image://gicon/go-up-symbolic"
-//                    onTriggered: {
-//                        Jarray.clear()
-//                        folderModel.path = folderModel.parentPath
-//                        filelist.currentIndex = -1
-//                        page.itemnum = 0
-//                        page.playing = filelist.currentIndex
-//                        currentpath.text = folderModel.path
-//                        Storage.setSetting("currentfolder", currentpath.text)
-//                    }
-//                }
-//            }
-
             MediaPlayer {
                 id: player
                 muted: false
@@ -244,8 +171,7 @@ MainView {
                     ListItem.Standard {
                         id: file
                         progression: model.isDir
-                        icon: !model.isDir ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : Qt.resolvedUrl("folder.png")
-//                        icon: !model.isDir ? (trackCover === "" ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : trackCover) : Qt.resolvedUrl("folder.png")
+                        icon: !model.isDir ? (trackCover === "" ? (fileName.match("\\.mp3") ? Qt.resolvedUrl("audio-x-mpeg.png") : Qt.resolvedUrl("audio-x-vorbis+ogg.png")) : "image://cover-art/"+filePath) : Qt.resolvedUrl("folder.png")
                         iconFrame: false
                         Label {
                             id: fileTitle
@@ -375,8 +301,8 @@ MainView {
                 }
                 UbuntuShape {
                     id: playshape
-                    height: parent.height * .5
-                    width: parent.height * .5
+                    height: parent.height * .4
+                    width: parent.height * .4
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: forwardshape.left
                     radius: "none"
@@ -402,8 +328,8 @@ MainView {
                 }
                 UbuntuShape {
                     id: upshape
-                    height: parent.height * .5
-                    width: parent.height * .5
+                    height: parent.height * .4
+                    width: parent.height * .4
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: playshape.left
                     radius: "none"
@@ -434,6 +360,7 @@ MainView {
                     anchors.left: parent.left
                     anchors.top: parent.top
                     anchors.topMargin: units.gu(1)
+                    anchors.leftMargin: units.gu(1)
                 }
                 Label {
                     id: fileTitleBottom
@@ -445,6 +372,7 @@ MainView {
                     anchors.left: iconbottom.right
                     anchors.top: parent.top
                     anchors.topMargin: units.gu(1)
+                    anchors.leftMargin: units.gu(1)
                     text: ""
                 }
                 Label {
@@ -456,6 +384,7 @@ MainView {
                     font.pixelSize: 12
                     anchors.left: iconbottom.right
                     anchors.top: fileTitleBottom.bottom
+                    anchors.leftMargin: units.gu(1)
                     text: ""
                 }
                 Rectangle {
@@ -463,6 +392,7 @@ MainView {
                     anchors.top: fileArtistAlbumBottom.bottom
                     anchors.left: iconbottom.right
                     anchors.topMargin: 2
+                    anchors.leftMargin: units.gu(1)
                     width: units.gu(20)
                     color: "#333333"
 
