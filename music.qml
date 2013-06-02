@@ -109,78 +109,78 @@ MainView {
                 player.play()
             }
 
-            tools: ToolbarActions {
-                id: playertoolbar
-                active: true
-                Action {
-                    text: "Mute"
-                    iconSource: "image://gicon/audio-volume-muted-symbolic"
-                    onTriggered: {
-                        player.volume = 0
-                    }
-                }
-                Action {
-                    text: "Down"
-                    iconSource: "image://gicon/audio-volume-low-symbolic"
-                    onTriggered: {
-                        if (player.volume >= .1) player.volume -= .1
-                    }
-                }
-                Action {
-                    text: "Up"
-                    iconSource: "image://gicon/audio-volume-high-symbolic"
-                    onTriggered: {
-                        if (player.volume <= .9) player.volume += .1
-                    }
-                }
-                Action {
-                    text: "Shuffle?"
-                    iconSource: page.random ? "image://gicon/edit-delete-symbolic" : "image://gicon/media-playlist-shuffle-symbolic"
-                    onTriggered: {
-                        page.random = !page.random
-                    }
-                }
-                Action {
-                    text: "Previous"
-                    iconSource: "image://gicon/media-skip-backward-symbolic"
-                    onTriggered: page.previousSong()
-                }
-                Action {
-                    text: "Stop"
-                    iconSource: "image://gicon/media-playback-stop-symbolic"
-                    onTriggered: {
-                        player.stop()
-                        playindicator.source = "play.png"
-                    }
-                }
-                Action {
-                    text: "Next"
-                    iconSource: "image://gicon/media-skip-forward-symbolic"
-                    onTriggered: page.nextSong()
-                }
-                Action {
-                    text: "Info"
-                    iconSource: "image://gicon/audio-x-generic-symbolic"
-                    onTriggered: {
-                        if (player.playbackState === MediaPlayer.PlayingState || player.playbackState === MediaPlayer.PausedState) {
-                            PopupUtils.open(dialogcomponent, filelist.currentItem)
-                        }
-                    }
-                }
-                Action {
-                    text: "Up"
-                    iconSource: "image://gicon/go-up-symbolic"
-                    onTriggered: {
-                        Jarray.clear()
-                        folderModel.path = folderModel.parentPath
-                        filelist.currentIndex = -1
-                        page.itemnum = 0
-                        page.playing = filelist.currentIndex
-                        currentpath.text = folderModel.path
-                        Storage.setSetting("currentfolder", currentpath.text)
-                    }
-                }
-            }
+//            tools: ToolbarActions {
+//                id: playertoolbar
+//                active: true
+//                Action {
+//                    text: "Mute"
+//                    iconSource: "image://gicon/audio-volume-muted-symbolic"
+//                    onTriggered: {
+//                        player.volume = 0
+//                    }
+//                }
+//                Action {
+//                    text: "Down"
+//                    iconSource: "image://gicon/audio-volume-low-symbolic"
+//                    onTriggered: {
+//                        if (player.volume >= .1) player.volume -= .1
+//                    }
+//                }
+//                Action {
+//                    text: "Up"
+//                    iconSource: "image://gicon/audio-volume-high-symbolic"
+//                    onTriggered: {
+//                        if (player.volume <= .9) player.volume += .1
+//                    }
+//                }
+//                Action {
+//                    text: "Shuffle?"
+//                    iconSource: page.random ? "image://gicon/edit-delete-symbolic" : "image://gicon/media-playlist-shuffle-symbolic"
+//                    onTriggered: {
+//                        page.random = !page.random
+//                    }
+//                }
+//                Action {
+//                    text: "Previous"
+//                    iconSource: "image://gicon/media-skip-backward-symbolic"
+//                    onTriggered: page.previousSong()
+//                }
+//                Action {
+//                    text: "Stop"
+//                    iconSource: "image://gicon/media-playback-stop-symbolic"
+//                    onTriggered: {
+//                        player.stop()
+//                        playindicator.source = "play.png"
+//                    }
+//                }
+//                Action {
+//                    text: "Next"
+//                    iconSource: "image://gicon/media-skip-forward-symbolic"
+//                    onTriggered: page.nextSong()
+//                }
+//                Action {
+//                    text: "Info"
+//                    iconSource: "image://gicon/audio-x-generic-symbolic"
+//                    onTriggered: {
+//                        if (player.playbackState === MediaPlayer.PlayingState || player.playbackState === MediaPlayer.PausedState) {
+//                            PopupUtils.open(dialogcomponent, filelist.currentItem)
+//                        }
+//                    }
+//                }
+//                Action {
+//                    text: "Up"
+//                    iconSource: "image://gicon/go-up-symbolic"
+//                    onTriggered: {
+//                        Jarray.clear()
+//                        folderModel.path = folderModel.parentPath
+//                        filelist.currentIndex = -1
+//                        page.itemnum = 0
+//                        page.playing = filelist.currentIndex
+//                        currentpath.text = folderModel.path
+//                        Storage.setSetting("currentfolder", currentpath.text)
+//                    }
+//                }
+//            }
 
             MediaPlayer {
                 id: player
@@ -193,7 +193,7 @@ MainView {
 
                 onPositionChanged: {
                     fileDurationProgressBackground.visible = true
-                    fileDurationProgress.width = Math.round((player.position*100)/player.duration) * 2
+                    fileDurationProgress.width = units.gu(Math.round((player.position*100)/player.duration) * .2) // 20 max
                     fileDurationBottom.text = Math.round((player.position/1000) / 60).toString() + ":" + (
                                 Math.round((player.position/1000) % 60)<10 ? "0"+Math.round((player.position/1000) % 60).toString() :
                                                                   Math.round((player.position/1000) % 60).toString())
@@ -353,15 +353,36 @@ MainView {
                 width: parent.width
                 color: "#333333"
                 UbuntuShape {
-                    id: thumbshape
-                    height: parent.height * .75
-                    width: parent.height * .75
+                    id: forwardshape
+                    height: parent.height * .5
+                    width: parent.height * .5
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
                     radius: "none"
                     image: Image {
+                        id: forwardindicator
+                        source: "forward.png"
+                        anchors.right: parent.right
+                        anchors.centerIn: parent
+                        opacity: .7
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            page.nextSong()
+                        }
+                    }
+                }
+                UbuntuShape {
+                    id: playshape
+                    height: parent.height * .5
+                    width: parent.height * .5
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: forwardshape.left
+                    radius: "none"
+                    image: Image {
                         id: playindicator
-                        source: ""
+                        source: "play.png"
                         anchors.right: parent.right
                         anchors.centerIn: parent
                         opacity: .7
@@ -379,6 +400,34 @@ MainView {
                         }
                     }
                 }
+                UbuntuShape {
+                    id: upshape
+                    height: parent.height * .5
+                    width: parent.height * .5
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: playshape.left
+                    radius: "none"
+                    image: Image {
+                        id: upindicator
+                        source: "up.png"
+                        anchors.right: parent.right
+                        anchors.centerIn: parent
+                        opacity: .7
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            Jarray.clear()
+                            folderModel.path = folderModel.parentPath
+                            filelist.currentIndex = -1
+                            page.itemnum = 0
+                            page.playing = filelist.currentIndex
+                            currentpath.text = folderModel.path
+                            Storage.setSetting("currentfolder", currentpath.text)
+                        }
+                    }
+                }
+
                 Image {
                     id: iconbottom
                     source: ""
@@ -388,7 +437,7 @@ MainView {
                 }
                 Label {
                     id: fileTitleBottom
-                    width: units.gu(400)
+                    width: units.gu(30)
                     wrapMode: Text.Wrap
                     color: "#FFFFFF"
                     maximumLineCount: 1
@@ -400,7 +449,7 @@ MainView {
                 }
                 Label {
                     id: fileArtistAlbumBottom
-                    width: units.gu(400)
+                    width: units.gu(30)
                     wrapMode: Text.Wrap
                     color: "#FFFFFF"
                     maximumLineCount: 1
@@ -414,7 +463,7 @@ MainView {
                     anchors.top: fileArtistAlbumBottom.bottom
                     anchors.left: iconbottom.right
                     anchors.topMargin: 2
-                    width: 200
+                    width: units.gu(20)
                     color: "#333333"
 
                     Rectangle {
@@ -422,7 +471,7 @@ MainView {
                         anchors.top: parent.top
                         anchors.topMargin: 2
                         height: 1
-                        width: 200
+                        width: units.gu(20)
                         color: "#FFFFFF"
                         visible: false
                     }
@@ -446,14 +495,17 @@ MainView {
                     font.pixelSize: 12
                     text: ""
                 }
-                ListItem.Standard {
+                Label {
                     id: currentpath
                     text: folderModel.path
-                    height: units.gu(4)
                     width: 3 * parent.width / 4
+                    color: "#FFFFFF"
                     anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 5
                     anchors.left: parent.left
-                    opacity: .5
+                    anchors.leftMargin: 10
+                    font.pixelSize: 14
+                    opacity: .4
                 }
             }
         }
