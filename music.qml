@@ -88,7 +88,11 @@ MainView {
                         console.log("filelist.count: " + filelist.count)
                         console.log("Jarray.size(): " + Jarray.size())
                         page.playing += direction
-                        filelist.currentIndex += direction
+                        if (page.playing === 0) {
+                            filelist.currentIndex = page.playing + (page.itemnum - Jarray.size())
+                        } else {
+                            filelist.currentIndex += direction
+                        }
                         player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
                     } else if(direction === 1) {
                         page.playing = 0
@@ -145,7 +149,6 @@ MainView {
                     text: "Stop"
                     iconSource: "image://gicon/media-playback-stop-symbolic"
                     onTriggered: {
-                        filelist.currentItem.focus = false
                         player.stop()
                     }
                 }
@@ -168,10 +171,10 @@ MainView {
                     iconSource: "image://gicon/go-up-symbolic"
                     onTriggered: {
                         Jarray.clear()
-                        player.stop()
                         folderModel.path = folderModel.parentPath
                         filelist.currentIndex = -1
                         page.itemnum = 0
+                        page.playing = filelist.currentIndex
                         currentpath.text = folderModel.path
                         Storage.setSetting("currentfolder", currentpath.text)
                     }
@@ -304,9 +307,9 @@ MainView {
                             }
                             if (model.isDir) {
                                 Jarray.clear()
-                                player.stop()
                                 filelist.currentIndex = -1
                                 page.itemnum = 0
+                                page.playing = filelist.currentIndex
                                 currentpath.text = filePath.toString()
                                 Storage.setSetting("currentfolder", currentpath.text.toString())
                                 console.log("Stored:" + Storage.getSetting("currentfolder"))
