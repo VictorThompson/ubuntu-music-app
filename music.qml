@@ -150,6 +150,7 @@ MainView {
                     iconSource: "image://gicon/media-playback-stop-symbolic"
                     onTriggered: {
                         player.stop()
+                        playindicator.source = "play.png"
                     }
                 }
                 Action {
@@ -188,9 +189,6 @@ MainView {
                     if (status == MediaPlayer.EndOfMedia) {
                         page.nextSong()
                     }
-                }
-                onStopped: {
-                    playindicator.source = "play.png"
                 }
 
                 onPositionChanged: {
