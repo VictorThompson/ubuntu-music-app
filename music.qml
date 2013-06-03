@@ -126,15 +126,15 @@ MainView {
                 onPositionChanged: {
                     fileDurationProgressBackground.visible = true
                     fileDurationProgressBackground_nowplaying.visible = true
-                    fileDurationProgress.width = units.gu(Math.round((player.position*100)/player.duration) * .2) // 20 max
-                    fileDurationProgress_nowplaying.width = units.gu(Math.round((player.position*100)/player.duration) * .4) // 40 max
-                    fileDurationBottom.text = Math.round((player.position/1000) / 60).toString() + ":" + (
-                                Math.round((player.position/1000) % 60)<10 ? "0"+Math.round((player.position/1000) % 60).toString() :
-                                                                  Math.round((player.position/1000) % 60).toString())
+                    fileDurationProgress.width = units.gu(Math.floor((player.position*100)/player.duration) * .2) // 20 max
+                    fileDurationProgress_nowplaying.width = units.gu(Math.floor((player.position*100)/player.duration) * .4) // 40 max
+                    fileDurationBottom.text = Math.floor((player.position/1000) / 60).toString() + ":" + (
+                                Math.floor((player.position/1000) % 60)<10 ? "0"+Math.floor((player.position/1000) % 60).toString() :
+                                                                  Math.floor((player.position/1000) % 60).toString())
                     fileDurationBottom.text += " / "
-                    fileDurationBottom.text += Math.round((player.duration/1000) / 60).toString() + ":" + (
-                                Math.round((player.duration/1000) % 60)<10 ? "0"+Math.round((player.duration/1000) % 60).toString() :
-                                                                  Math.round((player.duration/1000) % 60).toString())
+                    fileDurationBottom.text += Math.floor((player.duration/1000) / 60).toString() + ":" + (
+                                Math.floor((player.duration/1000) % 60)<10 ? "0"+Math.floor((player.duration/1000) % 60).toString() :
+                                                                  Math.floor((player.duration/1000) % 60).toString())
                     fileDurationBottom_nowplaying.text = fileDurationBottom.text
                 }
             }
