@@ -493,7 +493,7 @@ MainView {
                         height: 50
                         width: 50
                         anchors.bottom: parent.bottom
-                        anchors.right: parent.right
+                        anchors.left: playshape_nowplaying.right
                         radius: "none"
                         image: Image {
                             id: forwardindicator_nowplaying
@@ -514,7 +514,7 @@ MainView {
                         height: 50
                         width: 50
                         anchors.bottom: parent.bottom
-                        anchors.right: forwardshape_nowplaying.left
+                        anchors.horizontalCenter: parent.horizontalCenter
                         radius: "none"
                         image: Image {
                             id: playindicator_nowplaying
