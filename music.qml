@@ -27,7 +27,7 @@ MainView {
         anchors.fill: parent
 
         Component.onCompleted: {
-            pageStack.push(page)
+            pageStack.push(mainpage)
             Storage.initialize()
             console.debug("INITIALIZED")
             if (Storage.getSetting("initialized") !== "true") {
@@ -40,10 +40,15 @@ MainView {
         }
 
         Page {
-            id: page
+            id: mainpage
             property int playing: 0
             property int itemnum: 0
             property bool random: false
+            property string artist
+            property string album
+            property string song
+            property string filePath
+            property string tracktitle
 
             title: i18n.tr("Music")
 
@@ -69,39 +74,39 @@ MainView {
             }
 
             function getSong(direction) {
-                if (page.random) {
+                if (mainpage.random) {
                     var now = new Date();
                     var seed = now.getSeconds();
                     do {
                         var num = (Math.floor((Jarray.size()) * Math.random(seed)));
                         console.log(num)
-                        console.log(page.playing)
-                    } while (num == page.playing && Jarray.size() > 0)
+                        console.log(mainpage.playing)
+                    } while (num == mainpage.playing && Jarray.size() > 0)
                     player.source = Qt.resolvedUrl(Jarray.getList()[num])
                     filelist.currentIndex = Jarray.at(num)
-                    page.playing = num
+                    mainpage.playing = num
                     console.log("MediaPlayer statusChanged, currentIndex: " + filelist.currentIndex)
                 } else {
-                    if ((page.playing < Jarray.size() - 1 && direction === 1 )
-                            || (page.playing > 0 && direction === -1)) {
-                        console.log("page.playing: " + page.playing)
+                    if ((mainpage.playing < Jarray.size() - 1 && direction === 1 )
+                            || (mainpage.playing > 0 && direction === -1)) {
+                        console.log("mainpage.playing: " + mainpage.playing)
                         console.log("filelist.count: " + filelist.count)
                         console.log("Jarray.size(): " + Jarray.size())
-                        page.playing += direction
-                        if (page.playing === 0) {
-                            filelist.currentIndex = page.playing + (page.itemnum - Jarray.size())
+                        mainpage.playing += direction
+                        if (mainpage.playing === 0) {
+                            filelist.currentIndex = mainpage.playing + (mainpage.itemnum - Jarray.size())
                         } else {
                             filelist.currentIndex += direction
                         }
-                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
+                        player.source = Qt.resolvedUrl(Jarray.getList()[mainpage.playing])
                     } else if(direction === 1) {
-                        page.playing = 0
-                        filelist.currentIndex = page.playing + (filelist.count - Jarray.size())
-                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
+                        mainpage.playing = 0
+                        filelist.currentIndex = mainpage.playing + (filelist.count - Jarray.size())
+                        player.source = Qt.resolvedUrl(Jarray.getList()[mainpage.playing])
                     } else if(direction === -1) {
-                        page.playing = Jarray.size() - 1
-                        filelist.currentIndex = page.playing + (filelist.count - Jarray.size())
-                        player.source = Qt.resolvedUrl(Jarray.getList()[page.playing])
+                        mainpage.playing = Jarray.size() - 1
+                        filelist.currentIndex = mainpage.playing + (filelist.count - Jarray.size())
+                        player.source = Qt.resolvedUrl(Jarray.getList()[mainpage.playing])
                     }
                     console.log("MediaPlayer statusChanged, currentIndex: " + filelist.currentIndex)
                 }
@@ -114,13 +119,15 @@ MainView {
                 muted: false
                 onStatusChanged: {
                     if (status == MediaPlayer.EndOfMedia) {
-                        page.nextSong()
+                        mainpage.nextSong()
                     }
                 }
 
                 onPositionChanged: {
                     fileDurationProgressBackground.visible = true
+                    fileDurationProgressBackground_nowplaying.visible = true
                     fileDurationProgress.width = units.gu(Math.round((player.position*100)/player.duration) * .2) // 20 max
+                    fileDurationProgress_nowplaying.width = units.gu(Math.round((player.position*100)/player.duration) * .4) // 40 max
                     fileDurationBottom.text = Math.round((player.position/1000) / 60).toString() + ":" + (
                                 Math.round((player.position/1000) % 60)<10 ? "0"+Math.round((player.position/1000) % 60).toString() :
                                                                   Math.round((player.position/1000) % 60).toString())
@@ -128,6 +135,7 @@ MainView {
                     fileDurationBottom.text += Math.round((player.duration/1000) / 60).toString() + ":" + (
                                 Math.round((player.duration/1000) % 60)<10 ? "0"+Math.round((player.duration/1000) % 60).toString() :
                                                                   Math.round((player.duration/1000) % 60).toString())
+                    fileDurationBottom_nowplaying.text = fileDurationBottom.text
                 }
             }
 
@@ -144,15 +152,22 @@ MainView {
                     id: dialogcomponent
                     Dialog {
                         id: dialog
-                        property string artist
-                        property string album
-                        property string song
-                        title: "Song Information"
-                        text: "Artist: " + player.metaData.albumArtist + "\nAlbum: " + player.metaData.albumTitle + "\nSong: " + player.metaData.title
+                        title: "Artist: " + mainpage.artist + "\nAlbum: " + mainpage.album + "\nSong: " + mainpage.tracktitle
+                        Image {
+                            id: coverart
+                            width: 200
+                            height: 200
+                            source: "image://cover-art-full/" + mainpage.filePath
+                            anchors.bottom: dialogbutton.top
+                            anchors.margins: units.gu(1)
+                        }
 
                         Button {
+                            id: dialogbutton
                             text: "OK"
                             color: "#DD4814"
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: units.gu(1)
                             onClicked: PopupUtils.close(dialog)
                         }
                     }
@@ -215,60 +230,73 @@ MainView {
                             } else if (file.progression == false){
                                 selected = false
                                 fileArtistAlbumBottom.text = fileArtistAlbum.text
+                                fileArtistAlbumBottom_nowplaying.text = fileArtistAlbum.text
                                 fileTitleBottom.text = fileTitle.text
+                                fileTitleBottom_nowplaying.text = fileTitle.text
                                 iconbottom.source = file.icon
+                                iconbottom_nowplaying.source = !model.isDir && trackCover !== "" ? "image://cover-art-full/" + filePath : "Blank_album.jpg"
                             }
                         }
-
-                        onPressAndHold: {
-                            if (filelist.currentIndex == index && !model.isDir) {
-                                PopupUtils.open(dialogcomponent, file)
+                        MouseArea {
+                            anchors.fill: parent
+                            onDoubleClicked: {
                             }
-                        }
-                        onClicked: {
-                            if (focus == false) {
-                                focus = true
-                            }
-                            if (model.isDir) {
-                                Jarray.clear()
-                                filelist.currentIndex = -1
-                                page.itemnum = 0
-                                page.playing = filelist.currentIndex
-                                currentpath.text = filePath.toString()
-                                Storage.setSetting("currentfolder", currentpath.text.toString())
-                                console.log("Stored:" + Storage.getSetting("currentfolder"))
-                                folderModel.path = filePath
-                            } else {
-                                console.log("fileName: " + fileName)
-                                if (filelist.currentIndex == index) {
-                                    if (player.playbackState === MediaPlayer.PlayingState)  {
-                                        playindicator.source = "play.png"
-                                        player.pause()
-                                    } else if (player.playbackState === MediaPlayer.PausedState) {
-                                        playindicator.source = "pause.png"
-                                        player.play()
-                                    }
-                                } else {
-                                    player.stop()
-                                    player.source = Qt.resolvedUrl(filePath)
-                                    filelist.currentIndex = index
-                                    page.playing = Jarray.indexOf(filePath)
-                                    console.log("Playing click: "+player.source)
-                                    console.log("Index: " + filelist.currentIndex)
-                                    player.play()
-                                    playindicator.source = "pause.png"
+                            onPressAndHold: {
+                                if (filelist.currentIndex == index && !model.isDir) {
+//                                    mainpage.tracktitle = trackTitle
+//                                    mainpage.artist = trackArtist
+//                                    mainpage.album = trackAlbum
+//                                    mainpage.filePath = filePath
+//                                    PopupUtils.open(dialogcomponent, file)
+                                    pageStack.push(nowPlaying)
                                 }
-                                console.log("Source: " + player.source.toString())
-                                console.log("Length: " + trackLength.toString())
+                            }
+                            onClicked: {
+                                if (focus == false) {
+                                    focus = true
+                                }
+                                if (model.isDir) {
+                                    Jarray.clear()
+                                    filelist.currentIndex = -1
+                                    mainpage.itemnum = 0
+                                    mainpage.playing = filelist.currentIndex
+                                    currentpath.text = filePath.toString()
+                                    Storage.setSetting("currentfolder", currentpath.text.toString())
+                                    console.log("Stored:" + Storage.getSetting("currentfolder"))
+                                    folderModel.path = filePath
+                                } else {
+                                    console.log("fileName: " + fileName)
+                                    if (filelist.currentIndex == index) {
+                                        if (player.playbackState === MediaPlayer.PlayingState)  {
+                                            playindicator.source = "play.png"
+                                            player.pause()
+                                        } else if (player.playbackState === MediaPlayer.PausedState) {
+                                            playindicator.source = "pause.png"
+                                            player.play()
+                                        }
+                                    } else {
+                                        player.stop()
+                                        player.source = Qt.resolvedUrl(filePath)
+                                        filelist.currentIndex = index
+                                        mainpage.playing = Jarray.indexOf(filePath)
+                                        console.log("Playing click: "+player.source)
+                                        console.log("Index: " + filelist.currentIndex)
+                                        player.play()
+                                        playindicator.source = "pause.png"
+                                    }
+                                    console.log("Source: " + player.source.toString())
+                                    console.log("Length: " + trackLength.toString())
+                                }
+                                playindicator_nowplaying.source = playindicator.source
                             }
                         }
                         Component.onCompleted: {
                             if (!Jarray.contains(filePath) && !model.isDir) {
                                 console.log("Adding file:" + filePath)
-                                Jarray.addItem(filePath, page.itemnum)
-                                console.log(page.itemnum)
+                                Jarray.addItem(filePath, mainpage.itemnum)
+                                console.log(mainpage.itemnum)
                             }
-                            page.itemnum++
+                            mainpage.itemnum++
                         }
                     }
                 }
@@ -295,7 +323,7 @@ MainView {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            page.nextSong()
+                            mainpage.nextSong()
                         }
                     }
                 }
@@ -323,6 +351,7 @@ MainView {
                                 playindicator.source = "pause.png"
                                 player.play()
                             }
+                            playindicator_nowplaying.source = playindicator.source
                         }
                     }
                 }
@@ -346,8 +375,8 @@ MainView {
                             Jarray.clear()
                             folderModel.path = folderModel.parentPath
                             filelist.currentIndex = -1
-                            page.itemnum = 0
-                            page.playing = filelist.currentIndex
+                            mainpage.itemnum = 0
+                            mainpage.playing = filelist.currentIndex
                             currentpath.text = folderModel.path
                             Storage.setSetting("currentfolder", currentpath.text)
                         }
@@ -361,6 +390,13 @@ MainView {
                     anchors.top: parent.top
                     anchors.topMargin: units.gu(1)
                     anchors.leftMargin: units.gu(1)
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            pageStack.push(nowPlaying)
+                        }
+                    }
                 }
                 Label {
                     id: fileTitleBottom
@@ -436,6 +472,174 @@ MainView {
                     anchors.leftMargin: 10
                     font.pixelSize: 14
                     opacity: .4
+                }
+            }
+        }
+
+        Page {
+            id: nowPlaying
+            visible: false
+
+            Rectangle {
+                anchors.fill: parent
+                height: units.gu(10)
+                color: "#333333"
+                Column {
+                    anchors.fill: parent
+                    anchors.bottomMargin: units.gu(10)
+
+                    UbuntuShape {
+                        id: forwardshape_nowplaying
+                        height: 50
+                        width: 50
+                        anchors.bottom: parent.bottom
+                        anchors.right: parent.right
+                        radius: "none"
+                        image: Image {
+                            id: forwardindicator_nowplaying
+                            source: "forward.png"
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            opacity: .7
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                mainpage.nextSong()
+                            }
+                        }
+                    }
+                    UbuntuShape {
+                        id: playshape_nowplaying
+                        height: 50
+                        width: 50
+                        anchors.bottom: parent.bottom
+                        anchors.right: forwardshape_nowplaying.left
+                        radius: "none"
+                        image: Image {
+                            id: playindicator_nowplaying
+                            source: "play.png"
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            opacity: .7
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                if (player.playbackState === MediaPlayer.PlayingState)  {
+                                    playindicator.source = "play.png"
+                                    player.pause()
+                                } else {
+                                    playindicator.source = "pause.png"
+                                    player.play()
+                                }
+                                playindicator_nowplaying.source = playindicator.source
+                            }
+                        }
+                    }
+                    UbuntuShape {
+                        id: backshape_nowplaying
+                        height: 50
+                        width: 50
+                        anchors.bottom: parent.bottom
+                        anchors.right: playshape_nowplaying.left
+                        radius: "none"
+                        image: Image {
+                            id: upindicator_nowplaying
+                            source: "back.png"
+                            anchors.right: parent.right
+                            anchors.bottom: parent
+                            opacity: .7
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                mainpage.getSong(-1)
+                            }
+                        }
+                    }
+
+                    Image {
+                        id: iconbottom_nowplaying
+                        source: ""
+                        width: 300
+                        height: 300
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.top: parent.top
+                        anchors.topMargin: units.gu(1)
+                        anchors.leftMargin: units.gu(1)
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                pageStack.pop(nowPlaying)
+                            }
+                        }
+                    }
+                    Label {
+                        id: fileTitleBottom_nowplaying
+                        width: units.gu(30)
+                        wrapMode: Text.Wrap
+                        color: "#FFFFFF"
+                        maximumLineCount: 1
+                        font.pixelSize: 24
+                        anchors.top: iconbottom_nowplaying.bottom
+                        anchors.topMargin: units.gu(2)
+                        anchors.left: parent.left
+                        anchors.leftMargin: units.gu(2)
+                        text: ""
+                    }
+                    Label {
+                        id: fileArtistAlbumBottom_nowplaying
+                        width: units.gu(30)
+                        wrapMode: Text.Wrap
+                        color: "#FFFFFF"
+                        maximumLineCount: 1
+                        font.pixelSize: 16
+                        anchors.left: parent.left
+                        anchors.top: fileTitleBottom_nowplaying.bottom
+                        anchors.leftMargin: units.gu(2)
+                        text: ""
+                    }
+                    Rectangle {
+                        id: fileDurationProgressContainer_nowplaying
+                        anchors.top: fileArtistAlbumBottom_nowplaying.bottom
+                        anchors.left: parent.left
+                        anchors.topMargin: units.gu(2)
+                        anchors.leftMargin: units.gu(2)
+                        width: units.gu(40)
+                        color: "#333333"
+
+                        Rectangle {
+                            id: fileDurationProgressBackground_nowplaying
+                            anchors.top: parent.top
+                            anchors.topMargin: 4
+                            height: 1
+                            width: units.gu(40)
+                            color: "#FFFFFF"
+                            visible: false
+                        }
+                        Rectangle {
+                            id: fileDurationProgress_nowplaying
+                            anchors.top: parent.top
+                            height: 8
+                            width: 0
+                            color: "#DD4814"
+                        }
+                    }
+                    Label {
+                        id: fileDurationBottom_nowplaying
+                        anchors.top: fileDurationProgressContainer_nowplaying.bottom
+                        anchors.left: parent.left
+                        anchors.topMargin: units.gu(2)
+                        anchors.leftMargin: units.gu(2)
+                        width: units.gu(30)
+                        wrapMode: Text.Wrap
+                        color: "#FFFFFF"
+                        maximumLineCount: 1
+                        font.pixelSize: 16
+                        text: ""
+                    }
                 }
             }
         }
